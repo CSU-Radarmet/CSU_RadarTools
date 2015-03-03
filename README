@@ -1,8 +1,12 @@
 Python tools for polarimetric radar retrievals.
+
+This codebase was developed at Colorado State University by numerous people,
+including Brenda Dolan, Brody Fuchs, Kyle Wiens, Rob Cifelli, Larry Carey, and others
+
 Currently, fuzzy-logic-based hydrometeor identification, blended rainfall,
 and liquid/ice mass calculations are supported.
 
-These are suppliesd as standalone functions that take polarimetric radar data
+These are supplied as standalone functions that take polarimetric radar data
 as arguments. Scalars and arrays are supported as function inputs.
 
 To install:

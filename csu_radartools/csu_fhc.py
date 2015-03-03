@@ -288,8 +288,8 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
     verbose = Set to True to get text updates
     plot_flag = Flag to turn on optional beta function plots
     band = 'C' or 'S'
-    temp_factor = Factor to modify depth of T effects; > 1 will broaden the slopes
-                  of T MBFs
+    temp_factor = Factor to modify depth of T effects; > 1 will broaden the 
+                  slopes of T MBFs
     n_types = Number of hydrometeor species
     verbose = Set to True to get text updates
 

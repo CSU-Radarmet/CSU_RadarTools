@@ -21,35 +21,7 @@ tjlangoc@gmail.com
 # bdolan@atmos.colostate.edu
 #***************************************************************************
 #***************************************************************************
-"""
 
-import numpy as np
-import warnings
-
-DEFAULT_HFRZ = 4.5 #km MSL
-
-def calc_liquid_ice_mass(dbz, zdr, z, T=None, Hfrz=None, method='cifelli',
-                         fit_a=None, fit_b=None):
-    """
-    Arguments:
-    
-    Must be same shape
-    ------------------
-    dbz = Reflectivity (dBZ)
-    zdr = Differential Reflectivity (dB)
-    z = Height (km MSL)
-    T = Temperature (deg C)
-    
-    Scalar only
-    -----------
-    Hfrz = Height of freezing level (km MSL), if known; will be calculated
-           from sounding provided otherwise
-    
-    All need to be same array or scalar structure. If T == None, then
-    function will assume default arrangement of delta_thresh
-    
-    No error checking done, user is responsible for their own bad data masking
- 
 ################################
 OLD FUNCTION NOTES BELOW
 MAINTAINED FOR POSTERITY'S SAKE, MAY BE OUT OF DATE
@@ -86,6 +58,36 @@ MAINTAINED FOR POSTERITY'S SAKE, MAY BE OUT OF DATE
 ################################
 #END OLD NOTES
 ################################
+
+"""
+
+import numpy as np
+import warnings
+
+DEFAULT_HFRZ = 4.5 #km MSL
+
+def calc_liquid_ice_mass(dbz, zdr, z, T=None, Hfrz=None, method='cifelli',
+                         fit_a=None, fit_b=None):
+    """
+    Arguments:
+    
+    Must be same shape
+    ------------------
+    dbz = Reflectivity (dBZ)
+    zdr = Differential Reflectivity (dB)
+    z = Height (km MSL)
+    T = Temperature (deg C)
+    
+    Scalar only
+    -----------
+    Hfrz = Height of freezing level (km MSL), if known; will be calculated
+           from sounding provided otherwise
+    
+    All need to be same array or scalar structure. If T == None, then
+    function will assume default arrangement of delta_thresh
+    
+    No error checking done, user is responsible for their own bad data masking
+ 
     """
     len_flag = hasattr(dbz, '__len__')
     if len_flag:

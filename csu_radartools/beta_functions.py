@@ -63,7 +63,8 @@ import matplotlib.pyplot as plt
 import os
 
 #Beta function parameters stored in individual CSVs in separate directory
-CSV_DIR = os.sep.join([os.path.dirname(__file__), 'beta_function_parameters'])+'/'
+CSV_DIR = os.sep.join([os.path.dirname(__file__),
+                      'beta_function_parameters'])+'/'
 
 ################################
 #Helper Functions Below
