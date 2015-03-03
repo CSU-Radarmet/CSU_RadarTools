@@ -1,0 +1,13 @@
+Python tools for polarimetric radar retrievals.
+Currently, fuzzy-logic-based hydrometeor identification, blended rainfall,
+and liquid/ice mass calculations are supported.
+
+To install:
+python setup.py install
+(you may need to have sudo privileges, depending on your setup)
+
+To access, use the following in your analysis code:
+from csu_radartools import csu_fhc, csu_liquid_ice_mass, csu_blended_rain
+
+
+
