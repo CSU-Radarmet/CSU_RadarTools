@@ -340,12 +340,7 @@ def csu_hidro_rain(dz=None, zdr=None, kdp=None, fhc=None,
     if dz is None or kdp is None or zdr is None or fhc is None:
         warnings.warn('No dz, zdr, kdp, or fhc provided, failing ...')
         return
-    len_flag = hasattr(dz, '__len__')
-    if not len_flag:
-        dz = np.array([dz])
-        kdp = np.array([kdp])
-        zdr = np.array([zdr])
-        fhc = np.array([fhc])
+    dz, zdr, kdp, len_flag = _check_for_array(dz, zdr, kdp)
     crr_hidzk = np.zeros_like(dz)
     crr_meth = np.int16(np.zeros_like(dz))
 
@@ -394,3 +389,11 @@ def csu_hidro_rain(dz=None, zdr=None, kdp=None, fhc=None,
         return crr_hidzk[0], crr_meth[0]
     else:
         return crr_hidzk, crr_meth
+
+def _check_for_array(dz, zdr, kdp):
+    len_flag = hasattr(dz, '__len__')
+    if not len_flag:
+        dz = np.array([dz])
+        kdp = np.array([kdp])
+        zdr = np.array([zdr])
+    return dz, zdr, kdp, len_flag
