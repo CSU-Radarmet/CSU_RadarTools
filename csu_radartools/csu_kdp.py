@@ -4,12 +4,19 @@ tjlangco@gmail.com
 
 Last Updated 06 March 2015 (Python)
 Last Updated 26 July 2005 (IDL)
+
+Python v1.0
+
 """
 import numpy as np
+from numpy import linalg
 from warnings import warn
+#import time
 
+VERSION = '1.0'
 #NEXT THREE DATA STATEMENTS CONTAIN THE FIR FILTER ORDER, GAIN, AND COEFICIENTS
-#The specification of FIR filter coeficients is set for gate spacing of 150 meters.
+#The specification of FIR filter coeficients is set for gate spacing of
+#150 meters.
 fir3order = 20
 fir3gain = 1.044222
 fir3coef = np.array([1.625807356e-2, 2.230852545e-2, 2.896372364e-2,
@@ -64,7 +71,13 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1, bad=-32768):
     kd_lin = Specific differential phase (deg/km, vector)
     dp_lin = Filtered differential phase (deg, vector)
     sd_lin = Standard deviation of differential phase (deg, vector)
+    
+    To Do
+    -----
+    1. Performance improvements
+    2. Make object-oriented
     """
+    #begin_time = time.time()
     #Quick check for all the variables. Used keywords so order doesn't matter.
     if dp is None or dz is None or rng is None:
         warn('Missing needed variables (dp, dz, rh, and/or rng), failing ...')
@@ -76,85 +89,82 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1, bad=-32768):
     if not hasattr(thsd, '__len__'):
         thsd = np.zeros_like(rng) + thsd
     length = len(rng)
-    xx = np.zeros(31) #Range window used to calculate specific differential phase
-    yy = np.zeros(31) #Phase window used to calculate specific differential phase
+    lin = np.arange(length)
     half = 5 #Half the window size for calculating standard deviation of phase
-    half1 = 10 #Half the window size for the FIR filtering
-    tmp = np.zeros(11) #Dummy variable for the standard deviation routine
+    half1 = fir3order / 2 #Half the window size for the FIR filtering
     y = np.zeros(length) + bad #Dummy variable to store filtered phase
-    z = 1.0 * dp #Dummy variable to store unprocessed phase
-    fill = np.zeros(21) #Used to fill small gaps in phase data (phase)
-    xf = np.zeros(21) #Used to fill small gaps in phase data (range)
+    z = 1.0 * dp #Dummy variable to store un/pre-processed phase
+    #print time.time() - begin_time, 'seconds since start (DEF)'
 
     #Calculate standard deviation of phidp
-    for i in xrange(length):
-        ind = 0
-        for k in np.int32(np.linspace(i-half, i+half, 2*half+1)):
-            if k >= 0 and k < length:
-                if dp[k] >= -180.0:
-                    tmp[k-i+half] = dp[k]
-                    ind += 1
-        if ind > half:
-            sd_lin[i] = np.std(tmp[np.arange(ind)])
+    mask = dp >= -180
+    for i in lin[mask]:
+        index1 = i - half
+        index2 = i + half
+        if index1 >= 0 and index2 < length - 1:
+            yy = dp[index1:index2]
+            tmp_mask = mask[index1:index2]
+            if len(yy[tmp_mask]) > half:
+                #Following is faster than np.std
+                a = yy[tmp_mask]
+                m = a.mean()
+                c = a - m
+                sd_lin[i] = (np.dot(c,c) / a.size)**0.5
+                #sd_lin[i] = np.std(tmp[sdp_mask])
+    #print time.time() - begin_time, 'seconds since start (SDP)'
 
     #------------- MAIN LOOP of Phidp Adaptive Filtering --------------------
-    for mloop in np.arange(nfilter):
     #FIR FILTER SECTION
-        for i in np.int32(np.linspace(half1, length-half1-1, length-2*half1)):
-            it = 0
-            if sd_lin[i] <= thsd[i] and z[i] >= -180.0:
-                #Check how many points there are and prepare fill arrays
-                for j in np.arange(fir3order+1):
-                    if sd_lin[i-fir3order/2+j] <= thsd[i-fir3order/2+j] and\
-                       z[i-fir3order/2+j] >= -180.0:
-                        fill[it] = z[i-fir3order/2+j]
-                        xf[it] = rng[i-fir3order/2+j]
-                        it += 1
-                #Enough points to fill bad areas
-                if it > 16:
-                    xfin = np.arange(it)
-                    result = np.polyfit(xf[xfin], fill[xfin], 1)
-                    acc=0.0
-                    for j in np.arange(fir3order+1):
-                        if sd_lin[i-fir3order/2+j] > thsd[i-fir3order/2+j] or\
-                           z[i-fir3order/2+j] < -180.0:
-                            z[i-fir3order/2+j] = result[0] * \
-                                  rng[i-fir3order/2+j] + result[1]
-                        acc += fir3coef[j] * z[i-fir3order/2+j]
-                    y[i] = acc * fir3gain
-                #Not enough points
-                else:
-                    y[i] = bad
-            #Gate is bad
-            else:
-                y[i] = bad
-    dp_lin = 1.0 * y #Store filtered PHIDP
+    for mloop in np.arange(nfilter):
+        mask = np.logical_and(sd_lin <= thsd, z >= -180)
+        for i in lin[mask]:
+            index1 = i - half1
+            index2 = i + half1
+            if index1 >= 0 and index2 < length - 1:
+                yy = z[index1:index2+1]
+                xx = rng[index1:index2+1]
+                tmp_mask = mask[index1:index2+1]
+                siz = len(yy[tmp_mask])
+                if siz > 16:
+                    if siz < 21:
+                        #Following is faster than np.polyfit
+                        A = np.array([xx[tmp_mask], np.ones(siz)])
+                        result = linalg.lstsq(A.T, yy[tmp_mask])[0]
+                        #result = np.polyfit(xx[tmp_mask], yy[tmp_mask], 1)
+                        yy[~tmp_mask] = result[0] * xx[~tmp_mask] + result[1]
+                    y[i] = fir3gain * np.dot(fir3coef, yy)
+        z = 1.0 * y #Enables re-filtering of processed phase
+    dp_lin = 1.0 * y
+    #print time.time() - begin_time, 'seconds since start (FDP)'
     #*****************END LOOP for Phidp Adaptive Filtering*******************
     
     #CALCULATE KDP
-    for i in np.arange(length):
-        if sd_lin[i] <= thsd[i] and sd_lin[i] > 0:
-            #Default value for nadp is 10, but varies based on Zh
-            nadp = 10
-            if i > 15 and i < length-15:
-                if dz[i] < 35.0:
-                    nadp = 30
-                if dz[i] >= 35.0 and dz[i] < 45.0:
-                    nadp = 20
-                xxi=0
-                for jj in np.arange(nadp+1):
-                    if sd_lin[i-nadp/2+jj] <= thsd[i-nadp/2+jj] and\
-                       dp_lin[i-nadp/2+jj] > -180.0:
-                        xx[xxi] = rng[i-nadp/2+jj]
-                        yy[xxi] = dp_lin[i-nadp/2+jj]
-                        xxi += 1
-                #Improved Kdp base on LSE fit to Adap filt Phidp
-                if np.float(xxi)/np.float(nadp) >= 0.8:
-                    xxin = np.arange(xxi)
-                    result = np.polyfit(xx[xxin], yy[xxin], 1)
-                    kd_lin[i] = 0.5 * result[0]
+    #Default value for nadp is 10, but varies based on Zh
+    nadp = np.int16(0 * dz + 10)
+    tmp_mask = dz < 35
+    nadp[tmp_mask] = 30
+    tmp_mask = np.logical_and(dz >= 35, dz < 45)
+    nadp[tmp_mask] = 20
+    mask = dp_lin != bad
+    for i in lin[mask]:
+        half_nadp = nadp[i] / 2
+        index1 = i - half_nadp
+        index2 = i + half_nadp + 1
+        if index1 >= 0 and index2 <= length:
+            tmp_mask = mask[index1:index2]
+            xx = rng[index1:index2]
+            siz = len(xx[tmp_mask])
+            #Improved Kdp based on LSE fit to Adap filt Phidp
+            if siz >= 0.8 * nadp[i]:
+                yy = dp_lin[index1:index2]
+                #Following is faster than np.polyfit
+                A = np.array([xx[tmp_mask], np.ones(siz)])
+                result = linalg.lstsq(A.T, yy[tmp_mask])[0]
+                #result = np.polyfit(xx[tmp_mask], yy[tmp_mask], 1)
+                kd_lin[i] = 0.5 * result[0]
     #*******************END KDP CALCULATION******************************
-    
+
+    #print time.time() - begin_time, 'seconds since start (KDP/Done)'
     return kd_lin, dp_lin, sd_lin
 
 
