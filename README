@@ -18,7 +18,7 @@ python setup.py install
 
 To access, use the following in your analysis code:
 from csu_radartools import (csu_fhc, csu_liquid_ice_mass, csu_blended_rain, csu_dsd, 
-                            csu_kdp)
+                            csu_kdp, csu_misc)
 
 For help information do help on individual modules
 
