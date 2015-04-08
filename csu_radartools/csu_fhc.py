@@ -267,7 +267,8 @@ tjlangoc@gmail.com
 import numpy as np
 from beta_functions import get_mbf_sets_summer
 
-DEFAULT_WEIGHTS = {'DZ': 1.5, 'DR': 0.8, 'KD': 1.0, 'RH': 0.8, 'LD': 0.5, 'T': 0.4}
+DEFAULT_WEIGHTS = {'DZ': 1.5, 'DR': 0.8, 'KD': 1.0, 'RH': 0.8, 'LD': 0.5,
+                   'T': 0.4}
 
 def hid_beta(x_arr, a, b, m):
     """Beta function calculator"""
