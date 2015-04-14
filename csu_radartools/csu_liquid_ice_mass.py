@@ -69,6 +69,8 @@ DEFAULT_HFRZ = 4.5 #km MSL
 def calc_liquid_ice_mass(dbz, zdr, z, T=None, Hfrz=None, method='cifelli',
                          fit_a=None, fit_b=None):
     """
+    This function uses the ZDP method to discriminate between
+    
     Arguments:
     
     Must be same shape
@@ -78,15 +80,24 @@ def calc_liquid_ice_mass(dbz, zdr, z, T=None, Hfrz=None, method='cifelli',
     z = Height (km MSL)
     T = Temperature (deg C)
     
+    Other keywords
+    --------------
+    method = Name of method to determine fit_a and fit_b for rain line.
+             Options are 'cifelli' and 'cr1995' which correspond to 
+             Cifelli et al. 2002 and Carey and Rutledge (1995). If you put 
+             anything else here, it will use Carey and Rutledge (2000).
+    fit_a, fit_b = Fit coefficients to the rain line. If user doesn't specify,
+                   then the reference specified in method will be used.
+    
     Scalar only
     -----------
     Hfrz = Height of freezing level (km MSL), if known; will be calculated
-           from sounding provided otherwise
+           from sounding provided otherwise.
     
     All need to be same array or scalar structure. If T == None, then
-    function will assume default arrangement of delta_thresh
+    function will assume default arrangement of delta_thresh.
     
-    No error checking done, user is responsible for their own bad data masking
+    No error checking done, user is responsible for their own bad data masking.
  
     """
     len_flag = hasattr(dbz, '__len__')
