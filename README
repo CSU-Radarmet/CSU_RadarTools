@@ -20,9 +20,4 @@ To access, use the following in your analysis code:
 from csu_radartools import (csu_fhc, csu_liquid_ice_mass, csu_blended_rain, csu_dsd, 
                             csu_kdp, csu_misc)
 
-<<<<<<< HEAD
 For help information do help on individual modules. There is also a demonstration IPython notebook in the notebooks directory. Currently, this notebook covers the csu_fhc, csu_liquid_ice_mass, csu_blended_rain, and csu_dsd modules. More modules will be added to this notebook in the future.
-=======
-For help information do help on individual modules. There is also a demonstration IPython notebook in the notebooks directory.
-
->>>>>>> parent of c5f6b3d... 	modified:   README
