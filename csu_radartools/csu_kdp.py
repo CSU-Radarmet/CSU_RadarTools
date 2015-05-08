@@ -204,8 +204,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     # *****************END LOOP for Phidp Adaptive Filtering******************
     
     # CALCULATE KDP
-    # Default value for nadp is 10, but varies based on Zh
-    # Need to fix nadp for wider range of gate spacings
+    # Default value for nadp is half_fir_win, but varies based on Zh
     nadp = np.int16(0 * dz + half_fir_win)
     tmp_mask = dz < 35
     nadp[tmp_mask] = 3 * half_fir_win
