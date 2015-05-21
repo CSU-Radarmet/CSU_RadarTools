@@ -1,0 +1,443 @@
+Fuzzy-Logic Hydrometeor Identification
+
+#### BELOW ARE COPIED COMMENTS AND INFO FROM ORIGINAL IDL/WIENS CODE #####
+#### MANY OF THESE ARE NO LONGER APPLICABLE; PROVIDED ONLY FOR POSTERITY #####
+#### UPDATED COMMENTS ARE IN DOC STRINGS FOR PYTHON FUNCTIONS #####
+#+
+# NAME:
+# cdf_fhc
+#
+# PURPOSE:
+#  Perform the fuzzy logic hydrometeor classification (FHC)
+#  using input polarimetric variables and temperature.  Return the FHC
+#  types in an array of the same size as the input polarimetric variables.
+#
+#  This method is based on the method of Liu and Chandrasekar (2000),
+#  J. Atmos. Oceanic Tech., _17_, 140-164.  This assumes summer convective
+#  storms.   
+#  However, my method uses a weighted sum of each truth value instead
+#  of the straight multiplication method of L&C (2000).
+#
+# Truth value of each hydrotype for each input variable is a beta
+# function.  The total truth value for each hydro type is thus a
+# weighted sum of the truth value of each input variable, with two
+# exceptions:  The horizontal reflectivity and temperature (if used) truth
+# values are multiplied by the weighted sum of the others, thus effectively
+# weighting the final output more strongly on the horizontal reflectivity
+# and temperature (if present).  
+#
+# Uses parameters defined in 'cdf_beta_functions.pro' to define the
+# m,a,b parameters for each hydro type's beta function.  The independent
+# variable 'x' is one of the radar measurements.
+#
+# Basic form of a Membership Beta Function is:
+#
+#                         1
+#               ---------------------
+# beta(x) =         |              |^b
+#                1+ |  ((x-m)/a)^2 |
+#                   |              |
+#
+#  Where x = input data (Zh, Zdr, etc)
+#        m = center
+#        a = width
+#        b = slope
+# 
+# Anticipate having up to 6 input data fields and 11 fuzzy sets (HID types) for
+# summer storms.
+#
+# Input data fields:           HID types:           Fuzzy set:
+#-------------------           ----------           ----------
+#     Z_h                      Drizzle                  1
+#     Z_dr                     Rain                     2
+#     K_dp                     Dry snow                 3
+#     LDR                      Wet snow                 4
+#     rho_hv[0]                Vertical Ice             5
+#     Temperature              Dry graupel              6
+#                              Wet graupel              7
+#                              Small hail               8
+#                              Large hail               9
+#                              Sm. Hail & Rain         10
+#                              Lg. Hail & Rain         11
+#
+#  So there should be 6 X 11 = 66 beta functions...one for each pair
+#  of inputs and fuzzy sets
+#
+# The final output for each grid point is the fuzzy set which has the
+# highest cumulative truth value (i.e., the most likely hydrometeor type).
+#
+# If there is an error, the function will return the integer zero instead
+# of a gridded array.
+#
+# USAGE:
+# output = cdf_fhc(radar_data,mbf_sets,fhc_vars[,T,weights=weights,
+#                  use_temp=use_temp,compare=compare])
+#
+# Terms in brackets [] are optional.
+#
+# INPUT PARAMETERS:
+#        REQUIRED INPUTS
+# radar_data -- A structure containing the radar data 
+#               (Should not matter if in radial
+#                or gridded format).  The structure must
+#               have one of the following tag names: DZ,DR,KD,LD,RH. 
+#               These correspond to horiz. reflect, diff. reflect.,
+#               spec. diff. phase, linear depol. ratio, and corr. coeff.,
+#               respectively.  For example, to use all these variables in
+#               the classification, define this structure as:
+#
+#               radar_data = {DZ:dz_data,$
+#                             DR:DR_data,$
+#                             KD:KD_data,$
+#                             LD:LD_data,$
+#                             RH:RH_data}
+#
+#               Then call the program:
+#               result = cdf_fhc(radar_data,...)
+#
+#               Or if you have only horiz. reflect. and
+#               diff. reflect. define the structure like this:
+#              
+#               radar_data = {DZ:dz_data,$
+#                             DR:DR_data}
+#
+#               Only the tag names are important, e.g., the two-character
+#               string before each colon must be DZ, DR, etc.  The
+#               actual data (e.g., dz_data) should be 1,2,or3-d floating
+#               point array of the appropriate data.  Each data field is
+#               expected to have the same dimensions.
+# mbf_sets -- Beta function parameters for each fuzzy set and input
+#             variable (defined in 'cdf_beta_functions.pro')
+# fhc_vars -- A Boolean structure of which input variables to use in the
+#             FHC.  Should be a 6-element structure of either 0 (Don't
+#             Include) or 1 (Do Include)
+#             fhc_vars = {Zh: 0 or 1,
+#                         Zdr:0 or 1,
+#                         Kdp:0 or 1,
+#                         LDR:0 or 1,
+#                         rho_hv: 0 or 1,
+#                         T: 0 or 1}
+#             The use for this array is to do sensitivity tests where you'd
+#             explicity state which radar fields to use in the
+#             classification.  If the corresponding data is not present
+#             in the radar_data input structure, then this program will
+#             override what you passed it as 'fhc_vars' and set
+#             its boolean value to 0.  For example, if there is no LD field
+#             in the radar_data structure, then this program will do the
+#             following:
+#
+#             fhc_vars.LDR = 0
+#
+#             And hence will not try to use LDR in the classification.
+#
+#       OPTIONAL INPUTS
+# T -- Temperature, either single value or a 1-D vertical profile with the
+#      temperature defined at each vertical grid point of the radar data.
+#        --BD 2-2012: Changed to require this be the same size as the input data.
+# weights -- Weights for the different variables. Added this as a keyword such 
+#           that you don't need a speciifc cdf_fhc for different radars.  
+#           If weights is not passed, then default values are used. 
+#           This is a structure like fhc_vars:
+#        Weights= { W_Zh: 1.5 ,
+#                   W_Zdr: 0.8,
+#                   W_Kdp: 1.0,
+#                   W_rho: 0.8,
+#                   W_ldr: 0.5,
+#                   W_T: 0.4}
+#
+#
+# KEYWORDS:
+# use_temp -- If set, use temperature in the FHC.  If you set this keyword,
+#             make sure you also supply a temperature (T) input.
+# compare -- If set, a structure will be returned intstead of just the FHT
+#            variable.  It will contain the first
+#             and second best scoring categories, as well as their scores.
+#             fdat = { FHT, FHT2, mu_best, mu_sec}
+#
+#BD 2-2012: CHANGED SO NONE OF THESE ARE AVAILABLE ANYMORE. By making temperature
+#            The same size as the other variables, no longer need /rhi or /ppi.
+#            Sum_it never quite worked right for me anyway, so stick with the 
+#           Hybrid method for now.
+# rhi -- IF set, assume temperature is an array of temperatures at
+#        each z level of the radar field arrays.  Program assumes that the
+#        second dimension of the input radar data corresponds to height.
+# ppi -- If set, assume temperature is a single number for a given
+#        height level.
+# sum_it -- If set, use a weighted sum method for all variables.  If not
+#           set, use a weighted sum for Zdr, Kdp, LDR, and rho_hv; then
+#           multiply this sum by the scores for Zh and Temperature.
+#
+# You need to set either the 'rhi' or 'ppi' keyword only if you are passing
+# a 2-D cross-section of data to this program and you are including
+# temperature.  Otherwise, if you are passing a 3-D array and including
+# temperature, the program will assume the 3rd dimension of the input radar
+# data corresponds to height.   
+#
+#IF radar_data is just single values, then the scores for each category given 
+#   those inputs will be printed out.
+#
+#IF the compare keyword is set, then the output will be a structure that contains
+#   the first and second best scoring
+#    HID types, as well as the socres associated with those two categories.
+#
+# AUTHOR:
+# Kyle C. Wiens
+# kwiens@atmos.colostate.edu
+#
+# DATE:
+# 26 April 2002.
+#
+# MODIFICATIONS:
+#
+# 28 April 2002:  Changed the aggregation operations.  Instead of
+# taking a sum of all the MBFs, I take a sum of the polarimetric MBFs
+# and then multiply this sum by the MBFs for temperature and
+# horizontal reflectivity.
+#
+# 4 May 2002:  Added weighting factors.
+#              Also added ability to use any combination of the input
+#              variables in the FHC by multiplying each MBF by its
+#              associated fhc_vars value.  This is for doing sensitivity
+#              tests or if you don't have all 5 of the radar measurements.
+#
+# 5 May 2002:  Made weighting factors for Zdr, Kdp, LDR, and rho_hv
+# dependent on the hydro type.
+#
+# 15 May 2002: Added division by the sum of the weighting factors so
+# that the scores are normalized with respect to these factors.  I
+# should have done this a long time ago!!!
+#
+# 24 May 2002: Changed the weighting factors back to being the same for each
+# hydrometeor type.
+#
+# 23 July 2002: Greatly improved the efficiency of this program by
+# performing all the beta function calculations on the entire 2 or 3
+# dimensional data sets, all at once.  I used to have 4 embedded FOR
+# loops to do this.  It took some brain power to figure out how to
+# keep the maximum scores from each iteration, but apparently, my
+# brain was up to the task.  This runs MUCH faster now, with identical
+# results. 
+#
+# 24 July 2002: Decomposed rain/hail mix into large and small hail
+#               components.
+#
+# 7 April 2003: Added a few lines to allow the user to do the
+#               classification using any combination of input variables.
+#
+# 23 April 2003:  Changed the calling sequence so that the input radar data
+# is a structure instead of each individual field.  This should make the
+# program more modular by allowing it to work with any combination of radar
+# variables.   I also added more comments.
+#
+# 21 January 2004:  Added option to use a weighted sum for all variables by
+#                   passing the /Sum_It keyword.
+# 22 February 2012: Modified to be more modular, and no longer require so many 
+#                   keywords.
+#                    Also set up to pass in a single set of radar observations to 
+#                   calculate the scores.
+#                    B.D. 2-2012
+#
+#--------
+# This is a sub-function of the main program.
+#
+# FUNCTION hid_beta
+# Compute the value of the beta function from inputs x,a,b,m
+# Where,
+#        x = independent variable (DZ,KDP,etc.)
+#        a = width.
+#        b = slope.
+#        m = midpoint
+#--------
+
+########## END OF ORIGINAL COMMENTS AND INFORMATION ##########
+
+Blended Rainfall Calculation
+
+# See original comments below
+#***************************************************************************
+#***************************************************************************
+# Based on Code from A. Rowe and T. Lang from L. Nelson and L. Carey.
+# Brenda Dolan
+# February 27, 2012
+# bdolan@atmos.colostate.edu
+#***************************************************************************
+#***************************************************************************
+
+#############################
+ORIGINAL FUNCTION NOTES BELOW
+KEPT FOR POSTERITY ONLY
+MANY POINTS OUT OF DATE
+#############################
+# Brody Fuchs, Oct 2014, converting the IDL code to python here
+# This program essentially dublicates the fortran program
+# hybridrain_mod5.f.  It determine best polarimetric 
+# rainfall estimator, based on thresholds of ZH, ZDR, and KDP,
+# as well as Ice fraction.  
+# The input files are 2-D cdf (gridded to a specific ht).
+#
+# The program also does hydro ID, using the appropriate subroutines.
+# Because the input cdfs are 2D (1 ht), temp info at the height of
+# interest should be input for the event of interest
+
+# fi=ice fraction
+# dz=radar reflectivity
+# dr=differential reflectivity
+# kd=specific differntial phase
+# rkd=R(kdp)
+# rkddr=R(kdp,zdr)
+# rzhdr=R(zh,Zdr)
+
+# create zk "blended" rainfall (zk) array and an array to identify which
+# method is used
+# 1 = R(kdp,zdr)
+# 2 = R(kdp)
+# 3 = R(zh,zdr)
+# 4 = R-Z NXRAD (total reflectivity)
+# 5 = R-Z NEXRAD (rain only reflectivity)
+
+#cdf_array=intarr(3)
+
+### IF CALLING FROM BRORADAR, ALREADY HAVE DATA, DONT NEED TO READ IN    
+# open the cdf files
+#    dir = '/data3/brfuchs'
+#cdffile = findfile(dir+'*.cdf',count=numfile)
+#    cdffile = '%s/CHL20120606_220558_cedunf.cdf'
+
+#    vars = ['DZ', 'DR', 'KD', 'LH', 'RH']
+
+#    radar_data = {}
+#    nc = Dataset(filename)
+
+# READ IN NETCDF FILE AND GET DATA
+#    for var in vars:
+#    	radar_data[var] = nc.variables[var][:]
+# create x,y arrays that will be used in the output cdf files
+#    lon=xfirst+xdelta*findgen(cdf_array[0])
+#    lat=yfirst+ydelta*findgen(cdf_array[1])
+
+# BF have x and y arrays already
+
+# Run Kyle W.'s fuzzy logic HID program
+
+# first call the membership routine that does the fuzzification...
+# use the 2004 updated version of the MBFs with the "nomix" option
+#   cdf_beta_functions_kwiens,mbf_sets,/use_temp,/NoMix
+
+# now run the HID program
+# first have to define a couple of structures
+# 1st structure is the radar parameter tags and array 
+# that the tag corresponds to - this is described in the 
+# HID subroutine cdf_fhc.pro
+#
+# for chill rain maps, input cdf files have only DZ,DR, and KD
+#   radar_data = {DZ:dz,DR:dr,KD:kd}
+
+# define a structure of which input variables to actually use in the HID
+# don't really need this since we want to use all the variables in the HID
+# process
+#   fhc_vars = {Zh:1, Zdr:1, Kdp:1, LDR:0, rho_hv:0,T:1}
+
+# CHILL rainmaps are 2D at 1 km height (CAPPI or ~ 1km height for
+# SPRINT  gridppi option).  So,input a T at 1km AGL for event of
+# interest (based on sounding file)
+#   T=dz
+#   T[*,*]=17.8
+
+# now run the HID program over the grid and stuff the results into a
+# new array (hid)
+#   hid= cdf_fhc(radar_data,mbf_sets,fhc_vars,T,/use_temp,/ppi)
+
+# here's the number of hids - useful for defining more arrays...
+#   nhid=n_elements(mbf_sets.zh_set.a)
+    nhid = 10
+
+# set and initialize arrays for rr estimation
+
+#############################
+END ORIGINAL FUNCTION NOTES
+#############################
+
+#############################
+ORIGINAL FUNCTION NOTES BELOW
+KEPT FOR POSTERITY ONLY
+MANY POINTS OUT OF DATE
+#############################
+###### HID rain rate calculations ########
+
+#This is a blended polarimetric rainfall algorithm that selects 
+#rainfall estimators based on a hydrometeor identification scheme.
+#
+#Modified by Brenda Dolan
+#bdolan@atmos.colostate.edu
+#June 2010
+#Colorado State University
+
+#Ported over to python by Brody Fuchs, Oct 2014
+
+# first step is to fit the consensus of hid from all 6 inputs.  There
+# are 3 categories to consider: rain, mix, ice. the
+# category with the biggest number wins. 
+# 1=rain(c_hid_consensus=1)
+# 2=mix(c_hid_consensus=2)
+# 3=ice(c_hid_consensus=3)
+# 4=rain-mix tie (average of rain rr and mix rr is used)
+# (c_hid_consensus=4)
+# 5 rain-ice tie (rain value is used in rr calculation)
+# (c_hid_consensus=5)
+# 6 mix-ice tie (mix value is used in rr calculation)
+# (c_hid_consensus=6)
+
+# this is a variable that keeps track of which hid is actually
+# used for the site in question, based on the relative totals 
+# of the 6 values.  
+#   c_hid_consensus=dz
+#   c_hid_consensus[*]=0.
+
+# here is variable to store the actual rr estimate method for hidzk
+# the values go from 1-5 just like for zk; however, there is also a method
+# 6 which represents the result when mix and rain HID end in a tie: 
+# in this case, an average between the value calculated using the mix (r(kd))
+# and rain methods (could be r(kd), r(kd,dr), r(zh) or r(zh,dr))
+#############################
+END ORIGINAL FUNCTION NOTES
+#############################
+
+Liquid/Ice Mass Calculations
+
+################################
+OLD FUNCTION NOTES BELOW
+MAINTAINED FOR POSTERITY'S SAKE, MAY BE OUT OF DATE
+################################
+#In this case, dbz and zdr are 3-D arrays. Z is an array of the vertical grid.
+# CHECK TO SEE IF THIS IS IN GRAMS OR KILOGRAMS????
+# for comparison: Brett is getting order 10^9 kg for ice mass
+#    delta_thresh = fltarr(n_elements(z))
+#This uses methodology similar to Larry Carey's that makes it more and more
+#restrictive to identify ice below the melting level...based upon personal
+#communication with Larry.  Ice and Water mass are calculated using the Zdp
+#methodology outlined in Bringi and Chandra (2001)
+# Define empirical thresholds at each vertical level to restrict ice below 
+#   melting level
+# These delta thresholds are set up for a 0.5 km grid. These are to make it more 
+#   difficult to get ice in the lowest levels of the grid.
+#                delta_thresh[*] = 2.0
+#                delta_thresh[0] = 11.3333  ; 0.5 km 
+#                delta_thresh[1] = 10.0000  ; 1.0 km
+#                delta_thresh[2] = 8.66667  ; 1.5 km
+#                delta_thresh[3] = 7.33333  ; 2.0 km
+#                delta_thresh[4] = 6.00000  ; 2.5 km
+#                delta_thresh[5] = 4.66667  ; 3.0 km
+#                delta_thresh[6] = 3.33333  ; 3.5 km
+#
+#    #These delta thresholds are set up for a 1.0 km grid starting at 0 km.
+#    delta_thresh = np.zeros_like(z)
+#    delta_thresh[:] = 1.1
+#    delta_thresh[0] = 12.6667 #  0 km
+#    delta_thresh[1] = 10.0000 #  1 km
+#    delta_thresh[2] = 7.33333 #  2 km
+#    delta_thresh[3] = 4.66667 #  3 km
+#    delta_thresh[4] = 2.0  #     4 km
+################################
+#END OLD NOTES
+################################
+

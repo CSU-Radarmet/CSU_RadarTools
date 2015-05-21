@@ -9,7 +9,18 @@ Contruct Membership Beta Functions (MBFs) parameters for each
 hydrometeor type and fuzzy set based on scattering simulations (Dolan and
 Rutledge, 2009)
 
-(See csu_fhc.py for more details of the beta functions.)
+# Basic form of a Membership Beta Function is:
+#
+#                         1
+#               ---------------------
+# beta(x) =         |              |^b
+#                1+ |  ((x-m)/a)^2 |
+#                   |              |
+#
+#  Where x = input data (Zh, Zdr, etc)
+#        m = center
+#        a = width
+#        b = slope
 
 Anticipate having 6 input data fields and 10 fuzzy sets (HID types)
 

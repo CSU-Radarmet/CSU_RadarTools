@@ -22,43 +22,6 @@ tjlangoc@gmail.com
 #***************************************************************************
 #***************************************************************************
 
-################################
-OLD FUNCTION NOTES BELOW
-MAINTAINED FOR POSTERITY'S SAKE, MAY BE OUT OF DATE
-################################
-#In this case, dbz and zdr are 3-D arrays. Z is an array of the vertical grid.
-# CHECK TO SEE IF THIS IS IN GRAMS OR KILOGRAMS????
-# for comparison: Brett is getting order 10^9 kg for ice mass
-#    delta_thresh = fltarr(n_elements(z))
-#This uses methodology similar to Larry Carey's that makes it more and more
-#restrictive to identify ice below the melting level...based upon personal
-#communication with Larry.  Ice and Water mass are calculated using the Zdp
-#methodology outlined in Bringi and Chandra (2001)
-# Define empirical thresholds at each vertical level to restrict ice below 
-#   melting level
-# These delta thresholds are set up for a 0.5 km grid. These are to make it more 
-#   difficult to get ice in the lowest levels of the grid.
-#                delta_thresh[*] = 2.0
-#                delta_thresh[0] = 11.3333  ; 0.5 km 
-#                delta_thresh[1] = 10.0000  ; 1.0 km
-#                delta_thresh[2] = 8.66667  ; 1.5 km
-#                delta_thresh[3] = 7.33333  ; 2.0 km
-#                delta_thresh[4] = 6.00000  ; 2.5 km
-#                delta_thresh[5] = 4.66667  ; 3.0 km
-#                delta_thresh[6] = 3.33333  ; 3.5 km
-#
-#    #These delta thresholds are set up for a 1.0 km grid starting at 0 km.
-#    delta_thresh = np.zeros_like(z)
-#    delta_thresh[:] = 1.1
-#    delta_thresh[0] = 12.6667 #  0 km
-#    delta_thresh[1] = 10.0000 #  1 km
-#    delta_thresh[2] = 7.33333 #  2 km
-#    delta_thresh[3] = 4.66667 #  3 km
-#    delta_thresh[4] = 2.0  #     4 km
-################################
-#END OLD NOTES
-################################
-
 """
 
 import numpy as np
