@@ -91,7 +91,7 @@ def plot_beta_functions(mbf_sets, band, temp_factor, pdir='./', n_types=10):
     Optional plotting routine that produces basic beta function curves
     for every hydrometeor species
     mbf_sets = Membership beta function sets
-    band = 'C' or 'S'
+    band = 'X', 'C' or 'S'
     temp_factor = Factor to modify depth of T effects
     fdir = Path to plot locations
     n_types = Number of hydrometeor species
