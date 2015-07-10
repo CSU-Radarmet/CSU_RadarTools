@@ -167,6 +167,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     z = 1.0 * dp  # Dummy variable to store un/pre-processed phase
     # print time.time() - begin_time, 'seconds since start (DEF)'
 
+    #####################################################################
     # Calculate standard deviation of phidp
     mask = dp >= -180
     for i in lin[mask]:
@@ -192,10 +193,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
                 siz = len(yy[tmp_mask])
                 if siz > 0.8 * fir['order']:
                     if siz < fir['order'] + 1:
-                        # Following is faster than np.polyfit
-                        A = np.array([xx[tmp_mask], np.ones(siz)])
-                        result = linalg.lstsq(A.T, yy[tmp_mask])[0]
-                        # result = np.polyfit(xx[tmp_mask], yy[tmp_mask], 1)
+                        result = _leastsqrs(xx, yy, siz, tmp_mask)
                         yy[~tmp_mask] = result[0] * xx[~tmp_mask] + result[1]
                     y[i] = fir['gain'] * np.dot(fir['coef'], yy)
         z = 1.0 * y  # Enables re-filtering of processed phase
@@ -212,9 +210,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     nadp[tmp_mask] = 2 * half_fir_win
     mask = dp_lin != bad
     for i in lin[mask]:
-        half_nadp = nadp[i] / 2
-        index1 = i - half_nadp
-        index2 = i + half_nadp + 1
+        index1, index2 = _get_nadp_indices(nadp, i)
         if index1 >= 0 and index2 <= length:
             tmp_mask = mask[index1:index2]
             xx = rng[index1:index2]
@@ -222,16 +218,26 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
             # Improved Kdp based on LSE fit to Adap filt Phidp
             if siz >= 0.8 * nadp[i]:
                 yy = dp_lin[index1:index2]
-                # Following is faster than np.polyfit
-                A = np.array([xx[tmp_mask], np.ones(siz)])
-                result = linalg.lstsq(A.T, yy[tmp_mask])[0]
-                # result = np.polyfit(xx[tmp_mask], yy[tmp_mask], 1)
-                kd_lin[i] = 0.5 * result[0]
+                kd_lin[i] = _fit_line_and_get_kdp(xx, yy, siz, tmp_mask)
     # *******************END KDP CALCULATION****************************
-
     # print time.time() - begin_time, 'seconds since start (KDP/Done)'
     return kd_lin, dp_lin, sd_lin
 
+def _leastsqrs(xx, yy, siz, tmp_mask):
+    """
+    Following is faster than np.polyfit
+    e.g., return np.polyfit(xx[tmp_mask], yy[tmp_mask], 1)
+    """
+    A = np.array([xx[tmp_mask], np.ones(siz)])
+    return linalg.lstsq(A.T, yy[tmp_mask])[0]
+
+def _get_nadp_indices(nadp, i):
+    half_nadp = nadp[i] / 2
+    return i - half_nadp, i + half_nadp + 1
+
+def _fit_line_and_get_kdp(xx, yy, siz, tmp_mask):
+    result = _leastsqrs(xx, yy, siz, tmp_mask)
+    return 0.5 * result[0]
 
 def _quick_std(array, mask):
     """Following is faster than np.std()"""
