@@ -4,6 +4,7 @@ csu_liquid_ice_mass.py
 Modifications by Timothy Lang
 tjlangoc@gmail.com
 1/27/2015
+rev1 8/05/2015 - Python 3 compliant
 
 # Brody Fuchs, CSU, Oct 2014
 # brfuchs@atmos.colostate.edu
@@ -23,45 +24,46 @@ tjlangoc@gmail.com
 #***************************************************************************
 
 """
-
+from __future__ import division
 import numpy as np
 import warnings
 
-DEFAULT_HFRZ = 4.5 #km MSL
+DEFAULT_HFRZ = 4.5  # km MSL
+
 
 def calc_liquid_ice_mass(dbz, zdr, z, T=None, Hfrz=None, method='cifelli',
                          fit_a=None, fit_b=None):
     """
     This function uses the ZDP method to discriminate between
-    
+
     Arguments:
-    
+
     Must be same shape
     ------------------
     dbz = Reflectivity (dBZ)
     zdr = Differential Reflectivity (dB)
     z = Height (km MSL)
     T = Temperature (deg C)
-    
+
     Other keywords
     --------------
     method = Name of method to determine fit_a and fit_b for rain line.
-             Options are 'cifelli' and 'cr1995' which correspond to 
-             Cifelli et al. 2002 and Carey and Rutledge (1995). If you put 
+             Options are 'cifelli' and 'cr1995' which correspond to
+             Cifelli et al. 2002 and Carey and Rutledge (1995). If you put
              anything else here, it will use Carey and Rutledge (2000).
     fit_a, fit_b = Fit coefficients to the rain line. If user doesn't specify,
                    then the reference specified in method will be used.
-    
+
     Scalar only
     -----------
     Hfrz = Height of freezing level (km MSL), if known; will be calculated
            from sounding provided otherwise.
-    
+
     All need to be same array or scalar structure. If T == None, then
     function will assume default arrangement of delta_thresh.
-    
+
     No error checking done, user is responsible for their own bad data masking.
- 
+
     """
     len_flag = hasattr(dbz, '__len__')
     if len_flag:
@@ -88,28 +90,30 @@ def calc_liquid_ice_mass(dbz, zdr, z, T=None, Hfrz=None, method='cifelli',
     else:
         return mass_w[0], mass_i[0]
 
+
 def linearize(dz):
     """dz = Reflectivity (dBZ), returns Z (mm^6 m^-3)"""
     return 10.0**(dz / 10.0)
+
 
 def get_freezing_altitude(T, z):
     """
     T = temperature (deg C), z = altitude (any units)
     Assumes T & z are aligned, unmasked ndarrays of same shape.
     Returns highest possible freezing altitude.
-    Partial soundings (i.e., no pass thru freezing altitude) get fitted to 
+    Partial soundings (i.e., no pass thru freezing altitude) get fitted to
     a regression line and Hfrz is then estimated via the intercept.
     """
     T = T.ravel()
     z = z.ravel()
     try:
-        #Maybe there's already one or more zero points in sounding
+        # Maybe there's already one or more zero points in sounding
         return np.max(z[T == 0])
     except:
-        #Following gets indices of sorted z array, for comparison w/ T
+        # Following gets indices of sorted z array, for comparison w/ T
         zs = np.array(sorted(z))
         Tz = T[np.argsort(z)]
-        #If sounding passes thru 0, then look immediately above and below
+        # If sounding passes thru 0, then look immediately above and below
         if np.max(T) > 0 and np.min(T) < 0:
             zarg = np.argmax(zs[Tz > 0])
             T2 = Tz[zarg:zarg+2]
@@ -118,10 +122,11 @@ def get_freezing_altitude(T, z):
                 return np.interp(0.0, T2[::-1], z2[::-1])
             else:
                 return np.interp(0.0, T2, z2)
-        #Sounding doesn't pass thru 0, trying linear regression
+        # Sounding doesn't pass thru 0, trying linear regression
         elif np.max(T) < 0 or np.min(T) > 0:
             reg = np.polyfit(Tz, zs, 1)
             return reg[1]
+
 
 def get_delta_thresh(z, Hfrz):
     """
@@ -135,31 +140,35 @@ def get_delta_thresh(z, Hfrz):
     delta_thresh[cond] = (-8.0/3.0) * (z[cond] - Hfrz) + 2.0
     return delta_thresh
 
+
 def get_linear_fits(method='cifelli'):
     """Get coefficients from linear fits to Zdp and Zh"""
-    #TJL - Does Carey and Rutledge (1995) have another rain line?
+    # TJL - Does Carey and Rutledge (1995) have another rain line?
     if method == 'cifelli':
-        #These are Cifelli et al. (2002) for Amazon
-        fit_a = 0.8178;
+        # These are Cifelli et al. (2002) for Amazon
+        fit_a = 0.8178
         fit_b = 12.5088
     elif method == 'cr1995':
-        #These are Carey and Rutledge (1995) for Colorado (?)
+        # These are Carey and Rutledge (1995) for Colorado (?)
         fit_a = 0.9091
         fit_b = 8.5091
     else:
-        #These are Carey and Rutledge (2000) for MCTEX
+        # These are Carey and Rutledge (2000) for MCTEX
         fit_a = 0.77
         fit_b = 14.0
     return fit_a, fit_b
 
+
 def calc_zh_zv(dbz, zdr):
     Zh = linearize(dbz)
-    return Zh, Zh / linearize(zdr) #Vertical component of reflectivity
+    return Zh, Zh / linearize(zdr)  # Vertical component of reflectivity
+
 
 def calc_zdp(Zh, Zv):
-    Z_dp = Zh - Zv #Difference reflectivity
+    Z_dp = Zh - Zv  # Difference reflectivity
     Z_dp[Z_dp <= 0] = 0.000000000001
-    return 10.0 * np.log10(Z_dp) #Convert to decibel units
+    return 10.0 * np.log10(Z_dp)  # Convert to decibel units
+
 
 def _get_hfrz(T, z, Hfrz):
     if T is None:
@@ -173,37 +182,37 @@ def _get_hfrz(T, z, Hfrz):
                 warnings.warn('Given a scalar for T and no Hfrz, failing')
     return Hfrz
 
+
 def _liquid_ice_calcs(dbz, zdr, delta_thresh, fit_a=None, fit_b=None):
-    #Set up arrays to hold the output data
+    # Set up arrays to hold the output data
     mass_w = dbz * 0.0
     mass_i = dbz * 0.0
-    
-    #Get Zdp
+
+    # Get Zdp
     Zh, Zv = calc_zh_zv(dbz, zdr)
     Zdp = calc_zdp(Zh, Zv)
 
-    #Determine ice fraction and partition reflectivity
-    if fit_a == None:
+    # Determine ice fraction and partition reflectivity
+    if fit_a is None:
         fit_a, fit_b = get_linear_fits(method='cifelli')
-    dbz_est = fit_a * Zdp + fit_b #Estimate the best fit line
+    dbz_est = fit_a * Zdp + fit_b  # Estimate the best fit line
     delta_z = dbz - dbz_est
     delta_z[delta_z < 0] = 0.0
     ice_frac = 1.0 - 10.0**(-0.1 * delta_z)
     Zh_rain = Zh * (1.0 - ice_frac)
     Zh_ice = Zh - Zh_rain
 
-    #Check against delta_thresh
+    # Check against delta_thresh
     check = delta_z - delta_thresh
     above = check >= 0
     below = check < 0
 
-    #Z-M relationships for water and ice (Cifelli et al. 2002)
+    # Z-M relationships for water and ice (Cifelli et al. 2002)
     mass_w[below] = 0.70 * 10.0**(-3) * Zh[below]**(0.886) * \
-                    (Zh[below] / Zv[below])**(-4.159)
-    #mass_i[below] = 0.0 anyway
+        (Zh[below] / Zv[below])**(-4.159)
+    # mass_i[below] = 0.0 anyway
     mass_w[above] = 3.44 * 10.0**(-3) * Zh_rain[above]**(4.0/7.0)
     mass_i[above] = 1000.0 * np.pi * 917.0 * (4.0 * 10.0**6)**(3.0/7.0) * \
-                    ((5.28 * 10.0**(-18) * Zh_ice[above]) / 720.0)**(4.0/7.0)
-    mass_w[zdr < 0] = 0.0 #Negative ZDR = all ice
-    return mass_w, mass_i #Units = g m^-3
-
+        ((5.28 * 10.0**(-18) * Zh_ice[above]) / 720.0)**(4.0/7.0)
+    mass_w[zdr < 0] = 0.0  # Negative ZDR = all ice
+    return mass_w, mass_i  # Units = g m^-3
