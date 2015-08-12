@@ -1,8 +1,8 @@
 ,m,a,b
 Drizzle,0.010,0.010,2.000
 Rain,3.700,4.000,10.000
-Ice Crystals,0.043,0.430,6.000
-Aggregates,0.040,0.500,1.000
+Ice Crystals,0.043,0.0430,6.000
+Aggregates,0.040,0.0500,1.000
 Wet Snow,0.130,0.500,6.000
 Vertical Ice,-0.230,0.230,3.000
 Low-Density Graupel,0.200,0.560,3.000
