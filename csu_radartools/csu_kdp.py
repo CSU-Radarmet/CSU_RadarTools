@@ -2,13 +2,20 @@
 Timothy James Lang
 tjlangco@gmail.com
 
-Last Updated 27 April 2015 (Python 2.7)
+Last Updated 10 July 2015 (Python 2.7)
 Last Updated 26 July 2005 (IDL)
 
-csu_kdp v1.1
+csu_kdp v1.2
 
 Change Log
 ----------
+v1.3 Major Changes (08/05/2015):
+1. Made Python 3 compatible.
+2. Fixed issue with non-integer array indices.
+
+v1.2 Major Changes (07/10/2015):
+1. Made sub-module pep8 compliant.
+
 v1.1 Major Changes (04/27/2015):
 1. Made algorithm work with a user-defined gate spacing (via gs keyword).
    Untested on gate spacings that do not divide evenly into the 3-km window
@@ -24,13 +31,15 @@ To Do
 2. Make object-oriented
 
 """
+from __future__ import division
+from __future__ import print_function
 import numpy as np
 from numpy import linalg
 from scipy.signal import firwin
 from warnings import warn
 # import time
 
-VERSION = '1.1'
+VERSION = '1.3'
 
 # Used by FIR coefficient function (get_fir)
 FIR_GS = 150.0
@@ -56,7 +65,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
 
     Steps
     -----
-    1. Standard deviation of differential phase is calculated and used to 
+    1. Standard deviation of differential phase is calculated and used to
        QC the phase data. The stdev calculation uses up to 11 consecutive
        gates regardless of gate spacing.
     2. Differential phase is filtered using the FIR filter, which has been
@@ -78,9 +87,9 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     ---------
     dp = Differential phase (deg, 1D or 2D array)
     dz = Reflectivity (dBZ, 1D or 2D array)
-    rng = Range (km, 1D or 2D array - 
+    rng = Range (km, 1D or 2D array -
           use np.meshgrid() first tp make rng 2D if needed)
-    thsd = Threshold for standard deviation of differential phase, above which 
+    thsd = Threshold for standard deviation of differential phase, above which
            the data are not considered when filtering or calculating specific
            differential phase. The user can specify a 1D vector of spatially
            varying thresholds instead (i.e., vary by range).
@@ -93,7 +102,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     kd_lin = Specific differential phase (deg/km, 1D or 2D array)
     dp_lin = Filtered differential phase (deg, 1D or 2D array)
     sd_lin = Standard deviation of diff. phase (deg, 1D or 2D array)
-    
+
     """
     # Quick check on all vars. Used keywords so order doesn't matter.
     if dp is None or dz is None or rng is None:
@@ -109,11 +118,11 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         kd_lin = np.zeros_like(dp) + bad
         dp_lin = np.zeros_like(dp) + bad
         sd_lin = np.zeros_like(dp) + 100.0
-        for ray in xrange(np.shape(dp)[0]):
+        for ray in np.arange(np.shape(dp)[0]):
             kd_lin[ray], dp_lin[ray], sd_lin[ray] = \
                 _calc_kdp_ray(dp[ray], dz[ray], rng[ray], thsd=thsd,
                               nfilter=nfilter, bad=bad, fir=fir)
-    #Or
+    # Or
     elif np.ndim(dp) == 1:
         kd_lin, dp_lin, sd_lin = _calc_kdp_ray(dp, dz, rng, thsd=thsd, fir=fir,
                                                nfilter=nfilter, bad=bad)
@@ -145,7 +154,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     nfilter = Number of times to filter the data
     bad = Bad/missing data value
     fir = Dictionary containing FIR filter parameters
-    
+
     Returns
     -------
     kd_lin = Specific differential phase (deg/km, 1D array)
@@ -165,14 +174,14 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     half_fir_win = fir['order'] / 2  # Half window size for FIR filtering
     y = np.zeros(length) + bad  # Dummy variable to store filtered phase
     z = 1.0 * dp  # Dummy variable to store un/pre-processed phase
-    # print time.time() - begin_time, 'seconds since start (DEF)'
+    # print(time.time() - begin_time, 'seconds since start (DEF)')
 
     #####################################################################
     # Calculate standard deviation of phidp
     mask = dp >= -180
     for i in lin[mask]:
-        index1 = i - half_std_win
-        index2 = i + half_std_win
+        index1 = np.int32(i - half_std_win)
+        index2 = np.int32(i + half_std_win)
         if index1 >= 0 and index2 < length - 1:
             yy = dp[index1:index2]
             tmp_mask = mask[index1:index2]
@@ -184,8 +193,8 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     for mloop in np.arange(nfilter):
         mask = np.logical_and(sd_lin <= thsd, z >= -180)
         for i in lin[mask]:
-            index1 = i - half_fir_win
-            index2 = i + half_fir_win
+            index1 = np.int32(i - half_fir_win)
+            index2 = np.int32(i + half_fir_win)
             if index1 >= 0 and index2 < length - 1:
                 yy = z[index1:index2+1]
                 xx = rng[index1:index2+1]
@@ -198,9 +207,9 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
                     y[i] = fir['gain'] * np.dot(fir['coef'], yy)
         z = 1.0 * y  # Enables re-filtering of processed phase
     dp_lin = 1.0 * y
-    # print time.time() - begin_time, 'seconds since start (FDP)'
+    # print(time.time() - begin_time, 'seconds since start (FDP)')
     # *****************END LOOP for Phidp Adaptive Filtering******************
-    
+
     # CALCULATE KDP
     # Default value for nadp is half_fir_win, but varies based on Zh
     nadp = np.int16(0 * dz + half_fir_win)
@@ -220,8 +229,9 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
                 yy = dp_lin[index1:index2]
                 kd_lin[i] = _fit_line_and_get_kdp(xx, yy, siz, tmp_mask)
     # *******************END KDP CALCULATION****************************
-    # print time.time() - begin_time, 'seconds since start (KDP/Done)'
+    # print(time.time() - begin_time, 'seconds since start (KDP/Done)')
     return kd_lin, dp_lin, sd_lin
+
 
 def _leastsqrs(xx, yy, siz, tmp_mask):
     """
@@ -231,13 +241,16 @@ def _leastsqrs(xx, yy, siz, tmp_mask):
     A = np.array([xx[tmp_mask], np.ones(siz)])
     return linalg.lstsq(A.T, yy[tmp_mask])[0]
 
+
 def _get_nadp_indices(nadp, i):
     half_nadp = nadp[i] / 2
-    return i - half_nadp, i + half_nadp + 1
+    return np.int32(i - half_nadp), np.int32(i + half_nadp + 1)
+
 
 def _fit_line_and_get_kdp(xx, yy, siz, tmp_mask):
     result = _leastsqrs(xx, yy, siz, tmp_mask)
     return 0.5 * result[0]
+
 
 def _quick_std(array, mask):
     """Following is faster than np.std()"""
@@ -245,4 +258,3 @@ def _quick_std(array, mask):
     m = a.mean()
     c = a - m
     return (np.dot(c, c) / a.size)**0.5
-
