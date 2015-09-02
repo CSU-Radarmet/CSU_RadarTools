@@ -14,6 +14,9 @@ Lang et al. (2007; JCLIM) - Insect filter
 
 Change Log
 ----------
+v1.3 Major Updates (09/02/2015):
+1. Vastly sped up despeckle routine using scipy.
+
 v1.2 Major Updates (08/05/2015):
 1. Made Python 3 compatible.
 2. Made pep8 compatible.
@@ -27,8 +30,9 @@ v1.1 Major Updates (05/08/2015):
 from __future__ import division
 import numpy as np
 from warnings import warn
+from scipy.ndimage.measurements import label
 
-VERSION = '1.2'
+VERSION = '1.3'
 
 # Biological scatterer thresholds originally created using NAME data
 DEFAULT_DZ_RANGE = [[-100, 10], [10, 15], [15, 20],
@@ -88,12 +92,15 @@ def despeckle(data, bad=-32768, ngates=4):
     if not hasattr(data, '__len__'):
         warn('Does not work with scalars, #Failing ...')
         return
-    if np.ndim(data) == 2:
-        mask = data != bad
-        for az in np.arange(np.shape(data)[0]):
-            mask[az, :] = _despeckle_ray(data[az, :], bad, ngates)
-    elif np.ndim(data) == 1:
-        mask = _despeckle_ray(data, bad, ngates)
+    array = 1.0 * data
+    mask = array == bad
+    array[mask] = 0
+    array[~mask] = 1
+    if np.ndim(array) == 2:
+        for az in np.arange(np.shape(array)[0]):
+            mask[az, :] = _despeckle_ray(array[az, :], bad, ngates)
+    elif np.ndim(array) == 1:
+        mask = _despeckle_ray(array, bad, ngates)
     else:
         warn('Need 1- or 2-D array, #Failing ...')
         return
@@ -104,14 +111,12 @@ def _despeckle_ray(ray, bad, ngates):
     """
     Arguments similar to despeckle(). Should only be sent rays.
     """
-    rcp = 1.0 * ray
-    count = 0
-    for i in np.arange(len(rcp)):
-        if rcp[i] != bad:
-            count += 1
-        else:
-            if count <= ngates:
-                for j in np.arange(i-count, i, 1, dtype=np.int32):
-                    ray[j] = bad
-            count = 0
-    return ray == bad
+    lab, nf = label(ray)
+    if nf > 0:
+        labels = lab[lab > 0]
+        for feat in np.linspace(np.min(labels), np.max(labels),
+                                num=np.max(labels)-np.min(labels)+1):
+            featsz = np.size(labels[labels == feat])
+            if featsz <= ngates:
+                lab[lab == feat] = 0
+    return lab == 0

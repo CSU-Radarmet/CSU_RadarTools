@@ -5,7 +5,7 @@ tjlangco@gmail.com
 Last Updated 10 July 2015 (Python 2.7)
 Last Updated 26 July 2005 (IDL)
 
-csu_kdp v1.2
+csu_kdp v1.3
 
 Change Log
 ----------
@@ -31,8 +31,7 @@ To Do
 2. Make object-oriented
 
 """
-from __future__ import division
-from __future__ import print_function
+from __future__ import division, print_function
 import numpy as np
 from numpy import linalg
 from scipy.signal import firwin
@@ -51,7 +50,7 @@ KM2M = 1000.0
 
 
 def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
-                    bad=-32768, gs=FIR_GS):
+                    bad=-32768, gs=FIR_GS, window=FIR_WIN):
     """
     Overview
     --------
@@ -96,6 +95,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     nfilter = Number of times to apply the FIR filter
     bad = Value for bad/missing data
     gs = Gate spacing of radar (meters)
+    window = Leave as default (3 km) for now
 
     Returns
     -------
@@ -111,7 +111,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     if np.ndim(dp) != np.ndim(dz) or np.ndim(dp) != np.ndim(rng):
         warn('Array sizes don\'t match, failing ...')
         return
-    fir = get_fir(gs=gs)
+    fir = get_fir(gs=gs, window=window)
     # If array is 2D, then it assumes the first index refers to azimuth.
     # Thus it loops over that.
     if np.ndim(dp) == 2:
@@ -132,9 +132,14 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     return kd_lin, dp_lin, sd_lin
 
 
-def get_fir(gs=FIR_GS):
+def get_fir(gs=FIR_GS, window=FIR_WIN):
+    """
+    gs = Gate Spacing (m)
+    window = Filter Window (km)
+    window divided by gs should be an even number!
+    """
     fir = {}
-    fir['order'] = np.int32(FIR_WIN * KM2M / gs)
+    fir['order'] = np.int32(window * KM2M / gs)
     fir['gain'] = FIR_GAIN
     ratio = FIR_GS / gs
     freq = FIR_FREQ / ratio
