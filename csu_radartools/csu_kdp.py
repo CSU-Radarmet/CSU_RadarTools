@@ -2,13 +2,18 @@
 Timothy James Lang
 tjlangco@gmail.com
 
-Last Updated 10 July 2015 (Python 2.7)
+Last Updated 04 September 2015 (Python 2.7/3.4)
 Last Updated 26 July 2005 (IDL)
 
-csu_kdp v1.3
+csu_kdp v1.4
 
 Change Log
 ----------
+v1.4 Major Changes (09/04/2015):
+1. Added window keyword to enable stretching the FIR window (e.g.,
+   use a 21-pt filter over 5 km with 250-m gate spacing
+2. Forcing FIR order to be even, _calc_kdp_ray will crash otherwise
+
 v1.3 Major Changes (08/05/2015):
 1. Made Python 3 compatible.
 2. Fixed issue with non-integer array indices.
@@ -38,11 +43,12 @@ from scipy.signal import firwin
 from warnings import warn
 # import time
 
-VERSION = '1.3'
+VERSION = '1.4'
 
 # Used by FIR coefficient function (get_fir)
 FIR_GS = 150.0
 FIR_WIN = 3.0
+FIR_ORDER = 20
 FIR_GAIN = 1.0
 FIR_FREQ = 0.08
 FIR_STD = 28.0
@@ -68,8 +74,8 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
        QC the phase data. The stdev calculation uses up to 11 consecutive
        gates regardless of gate spacing.
     2. Differential phase is filtered using the FIR filter, which has been
-       tuned to the number of gates contained within the 3-km window. This
-       algorithm has only been tested for 3 km / gate spacing = even number.
+       tuned to the number of gates contained within the FIR window. This
+       algorithm only works for window / gate spacing = even number.
     3. Specific differential phase is calculated by consulting reflectivity.
        As reflectivity declines progressively more and more gates are needed
        in the window used to fit a line to the filtered phase. Specific
@@ -95,7 +101,8 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     nfilter = Number of times to apply the FIR filter
     bad = Value for bad/missing data
     gs = Gate spacing of radar (meters)
-    window = Leave as default (3 km) for now
+    window = Changes window over which FIR filter is applied (km). Also affects
+             the width of the adaptive KDP calculations.
 
     Returns
     -------
@@ -140,11 +147,16 @@ def get_fir(gs=FIR_GS, window=FIR_WIN):
     """
     fir = {}
     fir['order'] = np.int32(window * KM2M / gs)
+    if fir['order'] % 2 != 0:
+        warn('gs / window must be an even number! #Failing ...')
+        return
     fir['gain'] = FIR_GAIN
-    ratio = FIR_GS / gs
+    # ratio = FIR_GS / gs
+    ratio = fir['order'] / FIR_ORDER
     freq = FIR_FREQ / ratio
     std = ratio * FIR_STD
     fir['coef'] = firwin(fir['order'] + 1, freq, window=('gaussian', std))
+    # print('debug', fir)
     return fir
 
 
@@ -176,14 +188,14 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     lin = np.arange(length)
     # Half window size for calculating stdev of phase (fixed @ 11 gates)
     half_std_win = 5
-    half_fir_win = fir['order'] / 2  # Half window size for FIR filtering
+    half_fir_win = fir['order'] // 2  # Half window size for FIR filtering
     y = np.zeros(length) + bad  # Dummy variable to store filtered phase
     z = 1.0 * dp  # Dummy variable to store un/pre-processed phase
     # print(time.time() - begin_time, 'seconds since start (DEF)')
 
     #####################################################################
     # Calculate standard deviation of phidp
-    mask = dp >= -180
+    mask = dp != bad
     for i in lin[mask]:
         index1 = np.int32(i - half_std_win)
         index2 = np.int32(i + half_std_win)
@@ -196,7 +208,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     # ------------- MAIN LOOP of Phidp Adaptive Filtering ------------------
     # FIR FILTER SECTION
     for mloop in np.arange(nfilter):
-        mask = np.logical_and(sd_lin <= thsd, z >= -180)
+        mask = np.logical_and(sd_lin <= thsd, z != bad)
         for i in lin[mask]:
             index1 = np.int32(i - half_fir_win)
             index2 = np.int32(i + half_fir_win)
