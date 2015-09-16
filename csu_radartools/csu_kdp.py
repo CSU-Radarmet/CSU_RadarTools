@@ -11,8 +11,8 @@ Change Log
 ----------
 v1.4 Major Changes (09/04/2015):
 1. Added window keyword to enable stretching the FIR window (e.g.,
-   use a 21-pt filter over 5 km with 250-m gate spacing
-2. Forcing FIR order to be even, _calc_kdp_ray will crash otherwise
+   use a 21-pt filter over 5 km with 250-m gate spacing).
+2. Forcing FIR order to be even, _calc_kdp_ray will crash otherwise.
 
 v1.3 Major Changes (08/05/2015):
 1. Made Python 3 compatible.
