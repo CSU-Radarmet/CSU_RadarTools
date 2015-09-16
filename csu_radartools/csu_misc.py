@@ -40,7 +40,7 @@ DEFAULT_DZ_RANGE = [[-100, 10], [10, 15], [15, 20],
 DEFAULT_DR_THRESH = [1, 1.3, 1.7, 2.1, 2.5, 2.8]
 
 
-def insect_filter(dz, zdr, mask=None, dz_range=DEFAULT_DZ_RANGE,
+def insect_filter(dz, zdr, height=None, mask=None, dz_range=DEFAULT_DZ_RANGE,
                   dr_thresh=DEFAULT_DR_THRESH, bad=-32768):
     """
     Returns a mask that identifies potentially suspect gates due to presence of
