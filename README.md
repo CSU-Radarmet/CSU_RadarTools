@@ -7,8 +7,8 @@ including Brenda Dolan, Brody Fuchs, Kyle Wiens, Rob Cifelli, Larry Carey, Timot
 and others.
 
 Currently, fuzzy-logic-based hydrometeor identification, blended rainfall,
-DSD retrievals, and liquid/ice mass calculations are supported. There is also a 
-an algorithm that uses a finite impulse response (FIR) filter to process differential phase
+DSD retrievals, and liquid/ice mass calculations are supported. There is also an 
+algorithm that uses a finite impulse response (FIR) filter to process differential phase
 and calculate specific differential phase.
 Finally, there are some tools to do rudimentary QC on the data.
 
