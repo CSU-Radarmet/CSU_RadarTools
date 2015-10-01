@@ -8,12 +8,12 @@ and others.
 
 Currently, fuzzy-logic-based hydrometeor identification, blended rainfall,
 DSD retrievals, and liquid/ice mass calculations are supported. There is also a 
-an algorithm that uses a finite impulse response (FIR) filter to filter differential phase
+an algorithm that uses a finite impulse response (FIR) filter to process differential phase
 and calculate specific differential phase.
 Finally, there are some tools to do rudimentary QC on the data.
 
 These are supplied as standalone functions that take polarimetric radar data
-as arguments. Scalars and arrays are supported as function inputs. The only exception
+as arguments. Scalars and arrays are supported as function inputs. The main exception
 is csu_kdp.calc_kdp_bringi() which requires individual rays, sweeps, or volumes of 
 radar data. 
 
@@ -31,4 +31,4 @@ from csu_radartools import (csu_fhc, csu_liquid_ice_mass, csu_blended_rain, csu_
 
 For help information do help on individual modules. There is also a demonstration IPython notebook in the notebooks directory that covers all the modules. 
 
-CSU_RadarTools is known to work under Python 2.7 and 3.4. Other Python versions are tested.
+CSU_RadarTools is known to work under Python 2.7 and 3.4. Other Python versions are untested.
