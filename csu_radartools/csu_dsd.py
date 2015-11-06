@@ -96,8 +96,8 @@ def d0_high_zdr(zdr, a=0.0355, b=-0.3021, c=1.0556, d=0.6844):
 def calc_dsd_sband_bringi_2013(dz, zdr):
     """
     Retrieves d0, Nw, and mu following the methodology of
-    Bringi et al. (2009)
-    Works for C-band
+    Bringi et al. (2013)
+    Works for S-band
     """
     d0 = 0.0 * dz
     Nw = 0.0 * dz
