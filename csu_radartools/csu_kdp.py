@@ -128,11 +128,15 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         kd_lin = np.zeros_like(dp) + bad
         dp_lin = np.zeros_like(dp) + bad
         sd_lin = np.zeros_like(dp) + 100.0
-        print('debug about to make fortran call')
+#        print('debug about to make fortran call')
+#        print('debug', np.shape(dz), np.shape(dp), np.shape(fir['coef']))
         for ray in np.arange(np.shape(dp)[0]):
-            kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
-                len(dp[ray]), dp[ray], dz[ray], rng[ray], thsd[ray],
-                nfilter, bad, fir['order'], fir['gain'], fir['coeff'])
+            dpl = len(dp[ray])
+#            print('debug loop', ray, dpl, np.shape(dp[ray]), np.shape(dz[ray]))
+#            print('debug loop 2', fir['order'], fir['gain'], fir['coef'])
+            kd_lin[ray], dp_lin[ray], sd_lin[ray] = calc_kdp_ray_fir(
+                dpl, dp[ray], dz[ray], rng[ray], thsd[ray],
+                nfilter, bad, fir['order'], fir['gain'], fir['coef'])
 #             kd_lin[ray], dp_lin[ray], sd_lin[ray] = \
 #                 _calc_kdp_ray(dp[ray], dz[ray], rng[ray], thsd=thsd,
 #                               nfilter=nfilter, bad=bad, fir=fir)
@@ -142,7 +146,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
 #                                                nfilter=nfilter, bad=bad)
         kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
             len(dp), dp, dz, rng, thsd, nfilter, bad,
-            fir['order'], fir['gain'], fir['coeff'])
+            fir['order'], fir['gain'], fir['coef'])
     else:
         warn('Need 2D or 1D array, failing ...')
         return
@@ -233,7 +237,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
                         yy[~tmp_mask] = result[0] * xx[~tmp_mask] + result[1]
                     y[i] = fir['gain'] * np.dot(fir['coef'], yy)
         z = 1.0 * y  # Enables re-filtering of processed phase
-    dp_lin = 1.0 * y  # Shouldn't this be z???
+    dp_lin = 1.0 * z
     # print(time.time() - begin_time, 'seconds since start (FDP)')
     # *****************END LOOP for Phidp Adaptive Filtering******************
 
