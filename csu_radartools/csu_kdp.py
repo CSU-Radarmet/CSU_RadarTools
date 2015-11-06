@@ -5,10 +5,15 @@ tjlangco@gmail.com
 Last Updated 04 September 2015 (Python 2.7/3.4)
 Last Updated 26 July 2005 (IDL)
 
-csu_kdp v1.4
+csu_kdp v1.5
 
 Change Log
 ----------
+v1.5 Major Changes (11/06/2015):
+1. Now using a Fortran shared object (calc_kdp_ray_fir) to
+   do the ray-based KDP calculations. This has vastly sped up
+   the overall KDP processing (> 100x). f2py FTW!
+
 v1.4 Major Changes (09/04/2015):
 1. Added window keyword to enable stretching the FIR window (e.g.,
    use a 21-pt filter over 5 km with 250-m gate spacing).
