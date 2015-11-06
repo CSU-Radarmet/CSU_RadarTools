@@ -41,6 +41,7 @@ import numpy as np
 from numpy import linalg
 from scipy.signal import firwin
 from warnings import warn
+from calc_kdp_ray_fir import calc_kdp_ray_fir
 # import time
 
 VERSION = '1.4'
@@ -119,6 +120,8 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         warn('Array sizes don\'t match, failing ...')
         return
     fir = get_fir(gs=gs, window=window)
+    if not hasattr(thsd, '__len__'):
+        thsd = np.zeros_like(dp) + thsd
     # If array is 2D, then it assumes the first index refers to azimuth.
     # Thus it loops over that.
     if np.ndim(dp) == 2:
@@ -126,13 +129,19 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         dp_lin = np.zeros_like(dp) + bad
         sd_lin = np.zeros_like(dp) + 100.0
         for ray in np.arange(np.shape(dp)[0]):
-            kd_lin[ray], dp_lin[ray], sd_lin[ray] = \
-                _calc_kdp_ray(dp[ray], dz[ray], rng[ray], thsd=thsd,
-                              nfilter=nfilter, bad=bad, fir=fir)
+            kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
+                len(dp[ray]), dp[ray], dz[ray], rng[ray], thsd[ray],
+                nfilter, bad, fir['order'], fir['gain'], fir['coeff'])
+#             kd_lin[ray], dp_lin[ray], sd_lin[ray] = \
+#                 _calc_kdp_ray(dp[ray], dz[ray], rng[ray], thsd=thsd,
+#                               nfilter=nfilter, bad=bad, fir=fir)
     # Or
     elif np.ndim(dp) == 1:
-        kd_lin, dp_lin, sd_lin = _calc_kdp_ray(dp, dz, rng, thsd=thsd, fir=fir,
-                                               nfilter=nfilter, bad=bad)
+#         kd_lin, dp_lin, sd_lin = _calc_kdp_ray(dp, dz, rng, thsd=thsd, fir=fir,
+#                                                nfilter=nfilter, bad=bad)
+        kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
+            len(dp), dp, dz, rng, thsd, nfilter, bad,
+            fir['order'], fir['gain'], fir['coeff'])
     else:
         warn('Need 2D or 1D array, failing ...')
         return
@@ -223,7 +232,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
                         yy[~tmp_mask] = result[0] * xx[~tmp_mask] + result[1]
                     y[i] = fir['gain'] * np.dot(fir['coef'], yy)
         z = 1.0 * y  # Enables re-filtering of processed phase
-    dp_lin = 1.0 * y
+    dp_lin = 1.0 * y  # Shouldn't this be z???
     # print(time.time() - begin_time, 'seconds since start (FDP)')
     # *****************END LOOP for Phidp Adaptive Filtering******************
 
