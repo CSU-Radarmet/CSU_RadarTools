@@ -128,6 +128,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         kd_lin = np.zeros_like(dp) + bad
         dp_lin = np.zeros_like(dp) + bad
         sd_lin = np.zeros_like(dp) + 100.0
+        print('debug about to make fortran call')
         for ray in np.arange(np.shape(dp)[0]):
             kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
                 len(dp[ray]), dp[ray], dz[ray], rng[ray], thsd[ray],
