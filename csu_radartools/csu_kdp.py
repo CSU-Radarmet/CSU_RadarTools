@@ -2,17 +2,19 @@
 Timothy James Lang
 tjlangco@gmail.com
 
-Last Updated 04 September 2015 (Python 2.7/3.4)
+Last Updated 17 November 2015 (Python 2.7/3.4)
 Last Updated 26 July 2005 (IDL)
 
 csu_kdp v1.5
 
 Change Log
 ----------
-v1.5 Major Changes (11/06/2015):
+v1.5 Major Changes (11/17/2015):
 1. Now using a Fortran shared object (calc_kdp_ray_fir) to
    do the ray-based KDP calculations. This has vastly sped up
    the overall KDP processing (> 100x). f2py FTW!
+2. Updated calc_kdp_bringi to fail softly when (window/gs) is not
+   even.
 
 v1.4 Major Changes (09/04/2015):
 1. Added window keyword to enable stretching the FIR window (e.g.,
@@ -49,7 +51,7 @@ from warnings import warn
 from calc_kdp_ray_fir import calc_kdp_ray_fir
 # import time
 
-VERSION = '1.4'
+VERSION = '1.5'
 
 # Used by FIR coefficient function (get_fir)
 FIR_GS = 150.0
@@ -125,6 +127,9 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         warn('Array sizes don\'t match, failing ...')
         return
     fir = get_fir(gs=gs, window=window)
+    if fir is None:
+       print('Fix window/gs to be even, failing ...')
+       return None, None, None
     if not hasattr(thsd, '__len__'):
         thsd = np.zeros_like(dp) + thsd
     # If array is 2D, then it assumes the first index refers to azimuth.
