@@ -187,3 +187,25 @@ c     # Default value for nadp is half_fir_win, but varies based on Zh
 c     # *******************END KDP CALCULATION****************************
       return
       end
+
+c-----------------------------------------------------------------
+c     Beta function calculator
+
+      subroutine hid_beta_f(ngates, x_arr, a, b, m, beta)
+
+      integer*4, intent(in) :: ngates
+      real*4, intent(in) :: x_arr(:)
+      real*4, intent(in) :: a
+      real*4, intent(in) :: b
+      real*4, intent(in) :: m
+
+      real*4, intent(out) :: beta(ngates)
+      integer*4 i
+
+c      write(*, *) 'called hid_beta_f'
+      do i = 1, ngates
+        beta(i) = 1.0/(1.0 + (((x_arr(i) - m)/a)**2.0)**b)
+      enddo
+
+      return
+      end

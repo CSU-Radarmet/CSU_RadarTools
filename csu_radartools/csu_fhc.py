@@ -9,8 +9,10 @@ Porting over Brenda Dolan's HID code from IDL
 
 Modifications by Timothy Lang
 tjlangoc@gmail.com
-1/21/2015
-8/05/2015 - Python 3
+01/21/2015
+08/05/2015 - Python 3
+11/20/2015 - Sped up hid_beta by using f2py + working w/ 1-D flattened arrays
+             that are later reshaped to the necessary shape.
 
 """
 
@@ -19,6 +21,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
 from .beta_functions import get_mbf_sets_summer
+from calc_kdp_ray_fir import hid_beta_f
 
 DEFAULT_WEIGHTS = {'DZ': 1.5, 'DR': 0.8, 'KD': 1.0, 'RH': 0.8, 'LD': 0.5,
                    'T': 0.4}
@@ -83,7 +86,8 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
         use_temp = False
 
     # Populate fhc_vars and radar_data based on what was passed to function
-    radar_data, fhc_vars = _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose)
+    radar_data, fhc_vars, shp, sz = \
+        _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose)
 
     # Now grab the membership beta function parameters
     mbf_sets = get_mbf_sets_summer(
@@ -110,16 +114,22 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
 
     # Now loop over every hydrometeor class
     test_list = _get_test_list(fhc_vars, weights, radar_data, sets, varlist,
-                               weight_sum, pol_flag, use_temp, method)
+                               weight_sum, pol_flag, use_temp, method, sz)
     if test_list is None:
         return None
 
     # Finish up
     mu = np.array(test_list)
+    shp = np.concatenate([[n_types], shp])
+    # print('debug', shp)
+    # print('debug', np.shape(mu))
+    # print('debug reshp', np.shape(mu.reshape(shp)))
+
     if verbose:
         print(mu.shape)
         print('mu max: ', mu.max())
-    return mu
+    # return mu
+    return mu.reshape(shp)
 
 ##########################
 # Private Functions Below#
@@ -152,17 +162,19 @@ def _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose):
     fhc_vars = {'DZ': 1, 'DR': 1, 'KD': 1, 'LD': 1, 'RH': 1, 'T': 1}
     radar_data = {}
     if dz is not None:
-        radar_data['DZ'] = dz
+        shp = np.shape(dz)
+        sz = np.size(dz)
+        radar_data['DZ'] = np.array(dz).ravel()
     if zdr is not None:
-        radar_data['DR'] = zdr
+        radar_data['DR'] = np.array(zdr).ravel()
     if kdp is not None:
-        radar_data['KD'] = kdp
+        radar_data['KD'] = np.array(kdp).ravel()
     if rho is not None:
-        radar_data['RH'] = rho
+        radar_data['RH'] = np.array(rho).ravel()
     if ldr is not None:
-        radar_data['LD'] = ldr
+        radar_data['LD'] = np.array(ldr).ravel()
     if T is not None:
-        radar_data['T'] = T
+        radar_data['T'] = np.array(T).ravel()
     if 'DR' not in radar_data.keys():
         fhc_vars['DR'] = 0
     if 'KD' not in radar_data.keys():
@@ -175,7 +187,7 @@ def _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose):
         fhc_vars['T'] = 0
     if verbose:
         print('USING VARIABLES: ', fhc_vars)
-    return radar_data, fhc_vars
+    return radar_data, fhc_vars, shp, sz
 
 
 def _get_weight_sum(fhc_vars, weights, method, verbose):
@@ -200,10 +212,13 @@ def _get_weight_sum(fhc_vars, weights, method, verbose):
 
 
 def _calculate_test(fhc_vars, weights, radar_data, sets,
-                    varlist, weight_sum, c):
+                    varlist, weight_sum, c, sz):
     """Loop over every var to get initial value for each HID species 'test'"""
+#    test = (np.sum(np.array([fhc_vars[key] * weights[key] *
+#                            hid_beta(radar_data[key], sets[key]['a'][c],
+#                            sets[key]['b'][c], sets[key]['m'][c])
     test = (np.sum(np.array([fhc_vars[key] * weights[key] *
-                            hid_beta(radar_data[key], sets[key]['a'][c],
+                            hid_beta_f(sz, radar_data[key], sets[key]['a'][c],
                             sets[key]['b'][c], sets[key]['m'][c])
             for key in varlist if key in radar_data.keys()]),
             axis=0))/weight_sum
@@ -211,7 +226,7 @@ def _calculate_test(fhc_vars, weights, radar_data, sets,
 
 
 def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
-                   pol_flag, use_temp, method):
+                   pol_flag, use_temp, method, sz):
     """
     Master loop to compute HID values for each species ('test' & 'test_list').
     Depending on method used, approach is modfied.
@@ -225,35 +240,35 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
         if 'hybrid' in method:  # Hybrid emphasizes Z and T extra HARD
             if pol_flag:
                 test = _calculate_test(fhc_vars, weights, radar_data, sets,
-                                       varlist, weight_sum, c)
+                                       varlist, weight_sum, c, sz)
                 # if test.max() > 1:  # Max of test should never be > 1
                 #     print 'Fail loc 1, test.max() =', test.max()
                 #     return None
             if use_temp:
                 if pol_flag:
                     # *= multiplies by new value and stores in test
-                    test *= hid_beta(radar_data['T'], sets['T']['a'][c],
-                                     sets['T']['b'][c], sets['T']['m'][c])
+                    test *= hid_beta_f(sz, radar_data['T'], sets['T']['a'][c],
+                                       sets['T']['b'][c], sets['T']['m'][c])
                     # print 'in loc 2'
                     # if test.max() > 1: #Maximum of test should never be > 1
                     #     print 'Fail loc 2, test.max() =', test.max()
                     #     return None
                 else:
-                    test = hid_beta(radar_data['T'], sets['T']['a'][c],
-                                    sets['T']['b'][c], sets['T']['m'][c])
+                    test = hid_beta_f(sz, radar_data['T'], sets['T']['a'][c],
+                                      sets['T']['b'][c], sets['T']['m'][c])
             if fhc_vars['DZ']:
                 if pol_flag or use_temp:
-                    test *= hid_beta(radar_data['DZ'], sets['DZ']['a'][c],
-                                     sets['DZ']['b'][c], sets['DZ']['m'][c])
+                    test *= hid_beta_f(sz, radar_data['DZ'], sets['DZ']['a'][c],
+                                       sets['DZ']['b'][c], sets['DZ']['m'][c])
                     # if test.max() > 1:  # Max of test should never be > 1
                     #     print 'Fail loc 3, test.max() =', test.max()
                     #     return None
                 else:
-                    test = hid_beta(radar_data['DZ'], sets['DZ']['a'][c],
-                                    sets['DZ']['b'][c], sets['DZ']['m'][c])
+                    test = hid_beta_f(sz, radar_data['DZ'], sets['DZ']['a'][c],
+                                      sets['DZ']['b'][c], sets['DZ']['m'][c])
         elif 'linear' in method:  # Just a giant weighted sum
             if pol_flag:
                 test = _calculate_test(fhc_vars, weights, radar_data, sets,
-                                       varlist, weight_sum, c)
+                                       varlist, weight_sum, c, sz)
         test_list.append(test)
     return test_list
