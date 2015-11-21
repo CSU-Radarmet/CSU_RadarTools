@@ -158,33 +158,29 @@ def _get_pol_flag(fhc_vars):
 
 
 def _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose):
-    """Check for presence of each var, and update dicts as needed"""
-    fhc_vars = {'DZ': 1, 'DR': 1, 'KD': 1, 'LD': 1, 'RH': 1, 'T': 1}
+
+    """
+    Check for presence of each var, and update dicts as needed.
+    Flattens multi-dimensional arrays to optimize processing.
+    The output array from csu_fhc_summer() will be re-dimensionalized later.
+    """
+    varlist = [dz, zdr, kdp, rho, ldr, T]
+    keylist = ['DZ', 'DR', 'KD', 'RH', 'LD', 'T']
+    fhc_vars = {}
     radar_data = {}
-    if dz is not None:
-        shp = np.shape(dz)
-        sz = np.size(dz)
-        radar_data['DZ'] = np.array(dz).ravel()
-    if zdr is not None:
-        radar_data['DR'] = np.array(zdr).ravel()
-    if kdp is not None:
-        radar_data['KD'] = np.array(kdp).ravel()
-    if rho is not None:
-        radar_data['RH'] = np.array(rho).ravel()
-    if ldr is not None:
-        radar_data['LD'] = np.array(ldr).ravel()
-    if T is not None:
-        radar_data['T'] = np.array(T).ravel()
-    if 'DR' not in radar_data.keys():
-        fhc_vars['DR'] = 0
-    if 'KD' not in radar_data.keys():
-        fhc_vars['KD'] = 0
-    if 'LD' not in radar_data.keys():
-        fhc_vars['LD'] = 0
-    if 'RH' not in radar_data.keys():
-        fhc_vars['RH'] = 0
-    if 'T' not in radar_data.keys():
-        fhc_vars['T'] = 0
+    for i, key in enumerate(keylist):
+        var = varlist[i]
+        if var is not None:
+            if key == 'DZ':
+                shp = np.shape(var)
+                sz = np.size(var)
+            if np.ndim(var) > 1:
+                radar_data[key] = np.array(var).ravel()
+            else:
+                radar_data[key] = np.array(var)
+            fhc_vars[key] = 1
+        else:
+            fhc_vars[key] = 0
     if verbose:
         print('USING VARIABLES: ', fhc_vars)
     return radar_data, fhc_vars, shp, sz
@@ -258,8 +254,9 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
                                       sets['T']['b'][c], sets['T']['m'][c])
             if fhc_vars['DZ']:
                 if pol_flag or use_temp:
-                    test *= hid_beta_f(sz, radar_data['DZ'], sets['DZ']['a'][c],
-                                       sets['DZ']['b'][c], sets['DZ']['m'][c])
+                    test *= hid_beta_f(
+                        sz, radar_data['DZ'], sets['DZ']['a'][c],
+                        sets['DZ']['b'][c], sets['DZ']['m'][c])
                     # if test.max() > 1:  # Max of test should never be > 1
                     #     print 'Fail loc 3, test.max() =', test.max()
                     #     return None

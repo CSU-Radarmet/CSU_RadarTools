@@ -11,7 +11,7 @@ Timothy Lang (tjlangco@gmail.com)
 2/20/2015
 rev1 07/10/2015
 rev2 08/03/2015 - Python 3
-rev3 09/16/2015 - Fixed logical inconsistencies leading to lack of 
+rev3 09/16/2015 - Fixed logical inconsistencies leading to lack of
                   rainfall calculation in HID = rain + low Z + high Kdp/Zdr
 """
 
@@ -227,13 +227,14 @@ def csu_hidro_rain(dz=None, zdr=None, kdp=None, fhc=None,
     cond_dz_kdp_zdr = np.logical_and(cond_dz_kdp, cond_zdr)
     cond_dz_kdp_not_zdr = np.logical_and(cond_dz_kdp, ~cond_zdr)
     cond_not_kdp_zdr = np.logical_and(~cond_kdp, cond_zdr)
-    
     cond_not_kdp_not_zdr = np.logical_and(~cond_kdp, ~cond_zdr)
+
     # fhc = 5, 7, 8, 9 => wet snow, graupel (LD & HD), hail
     cond_ice_a = np.logical_or(fhc == 5, fhc == 7)
     cond_ice_b = np.logical_or(fhc == 8, fhc == 9)
     cond_ice = np.logical_or(cond_ice_a, cond_ice_b)
     cond_ice_kdp = np.logical_and(cond_ice, cond_kdp)
+
     # Set methods
     cond_meth_1 = np.logical_and(cond_rain, cond_dz_kdp_zdr)
     cond_meth_2 = np.logical_and(cond_rain, cond_dz_kdp_not_zdr)
@@ -241,12 +242,14 @@ def csu_hidro_rain(dz=None, zdr=None, kdp=None, fhc=None,
     cond_meth_4a = np.logical_and(cond_rain, cond_not_kdp_not_zdr)
     cond_meth_4b = np.logical_and(cond_rain, ~cond_dz)
     cond_meth_4 = np.logical_or(cond_meth_4a, cond_meth_4b)
+
     # Assign rain rates based on methods
     crr_hidzk[cond_meth_1] = crr_kddr[cond_meth_1]
     crr_hidzk[cond_meth_2] = crr_kd[cond_meth_2]
     crr_hidzk[cond_meth_3] = crr_zhdr[cond_meth_3]
     crr_hidzk[cond_meth_4] = crr_z88t[cond_meth_4]
     crr_hidzk[cond_ice_kdp] = crr_kd[cond_ice_kdp]
+
     # Save methods
     crr_meth[cond_meth_1] = 1
     crr_meth[cond_meth_2] = 2

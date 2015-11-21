@@ -118,7 +118,7 @@ def get_freezing_altitude(T, z):
         sin = np.argsort(z)
         zs = z[sin]
         Tz = T[sin]
-        
+
         # If sounding passes thru 0, then look immediately above and below
         if np.max(T) > 0 and np.min(T) < 0:
             zarg = np.argmax(zs[Tz > 0])

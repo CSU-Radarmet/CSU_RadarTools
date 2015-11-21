@@ -128,8 +128,8 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         return
     fir = get_fir(gs=gs, window=window)
     if fir is None:
-       print('Fix window/gs to be even, failing ...')
-       return None, None, None
+        print('Fix window/gs to be even, failing ...')
+        return None, None, None
     if not hasattr(thsd, '__len__'):
         thsd = np.zeros_like(dp) + thsd
     # If array is 2D, then it assumes the first index refers to azimuth.
@@ -142,8 +142,8 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
 #        print('debug', np.shape(dz), np.shape(dp), np.shape(fir['coef']))
         for ray in np.arange(np.shape(dp)[0]):
             dpl = len(dp[ray])
-#            print('debug loop', ray, dpl, np.shape(dp[ray]), np.shape(dz[ray]))
-#            print('debug loop 2', fir['order'], fir['gain'], fir['coef'])
+#           print('debug loop', ray, dpl, np.shape(dp[ray]), np.shape(dz[ray]))
+#           print('debug loop 2', fir['order'], fir['gain'], fir['coef'])
             kd_lin[ray], dp_lin[ray], sd_lin[ray] = calc_kdp_ray_fir(
                 dpl, dp[ray], dz[ray], rng[ray], thsd[ray],
                 nfilter, bad, fir['order'], fir['gain'], fir['coef'])
@@ -152,11 +152,11 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
 #                               nfilter=nfilter, bad=bad, fir=fir)
     # Or
     elif np.ndim(dp) == 1:
-#         kd_lin, dp_lin, sd_lin = _calc_kdp_ray(dp, dz, rng, thsd=thsd, fir=fir,
-#                                                nfilter=nfilter, bad=bad)
         kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
             len(dp), dp, dz, rng, thsd, nfilter, bad,
             fir['order'], fir['gain'], fir['coef'])
+#        kd_lin, dp_lin, sd_lin = _calc_kdp_ray(
+#             dp, dz, rng, thsd=thsd, fir=fir, nfilter=nfilter, bad=bad)
     else:
         warn('Need 2D or 1D array, failing ...')
         return
