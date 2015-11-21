@@ -4,7 +4,8 @@ csu_liquid_ice_mass.py
 Modifications by Timothy Lang
 tjlangoc@gmail.com
 1/27/2015
-rev1 8/05/2015 - Python 3 compliant
+rev1 08/05/2015 - Python 3 compliant
+rev2 11/20/2015 - Performance improvements
 
 # Brody Fuchs, CSU, Oct 2014
 # brfuchs@atmos.colostate.edu
@@ -110,9 +111,14 @@ def get_freezing_altitude(T, z):
         # Maybe there's already one or more zero points in sounding
         return np.max(z[T == 0])
     except:
-        # Following gets indices of sorted z array, for comparison w/ T
-        zs = np.array(sorted(z))
-        Tz = T[np.argsort(z)]
+        # Following gets indices of sorted z array, for comparison w/ T.
+        # Commented two lines below were slower than necessary.
+        # zs = sorted(z)
+        # Tz = T[np.argsort(z)]
+        sin = np.argsort(z)
+        zs = z[sin]
+        Tz = T[sin]
+
         # If sounding passes thru 0, then look immediately above and below
         if np.max(T) > 0 and np.min(T) < 0:
             zarg = np.argmax(zs[Tz > 0])

@@ -1,0 +1,7 @@
+build
+*.pyc
+dist
+fortran
+notebooks/.ipynb_checkpoints
+notebooks/CSU_RadarTools_Demo-AMS_OSRSC.ipynb
+references
