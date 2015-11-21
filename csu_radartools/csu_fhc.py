@@ -121,15 +121,11 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
     # Finish up
     mu = np.array(test_list)
     shp = np.concatenate([[n_types], shp])
-    # print('debug', shp)
-    # print('debug', np.shape(mu))
-    # print('debug reshp', np.shape(mu.reshape(shp)))
-
     if verbose:
         print(mu.shape)
         print('mu max: ', mu.max())
-    # return mu
-    return mu.reshape(shp)
+    # return mu but make sure the shape is an int array
+    return mu.reshape(shp.astype(np.int32))
 
 ##########################
 # Private Functions Below#
