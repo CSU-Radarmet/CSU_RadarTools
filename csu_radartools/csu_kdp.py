@@ -5,10 +5,13 @@ tjlangco@gmail.com
 Last Updated 17 November 2015 (Python 2.7/3.4)
 Last Updated 26 July 2005 (IDL)
 
-csu_kdp v1.5
+csu_kdp v1.5.1
 
 Change Log
 ----------
+v1.5.1 Major Changes (12/08/2015):
+1. Made number of gates used for standard deviation calculation adjustable.
+
 v1.5 Major Changes (11/17/2015):
 1. Now using a Fortran shared object (calc_kdp_ray_fir) to
    do the ray-based KDP calculations. This has vastly sped up
@@ -61,10 +64,11 @@ FIR_GAIN = 1.0
 FIR_FREQ = 0.08
 FIR_STD = 28.0
 KM2M = 1000.0
+STD_GATE = 11
 
 
 def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
-                    bad=-32768, gs=FIR_GS, window=FIR_WIN):
+                    bad=-32768, gs=FIR_GS, window=FIR_WIN, std_gate=STD_GATE):
     """
     Overview
     --------
@@ -79,7 +83,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     Steps
     -----
     1. Standard deviation of differential phase is calculated and used to
-       QC the phase data. The stdev calculation uses up to 11 consecutive
+       QC the phase data. The stdev calculation uses up to std_gate consecutive
        gates regardless of gate spacing.
     2. Differential phase is filtered using the FIR filter, which has been
        tuned to the number of gates contained within the FIR window. This
@@ -111,6 +115,8 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     gs = Gate spacing of radar (meters)
     window = Changes window over which FIR filter is applied (km). Also affects
              the width of the adaptive KDP calculations.
+    std_gate = Number of gates for standard deviation of phase calculation.
+               Must be odd or function will just set it to the default value.
 
     Returns
     -------
@@ -126,6 +132,10 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     if np.ndim(dp) != np.ndim(dz) or np.ndim(dp) != np.ndim(rng):
         warn('Array sizes don\'t match, failing ...')
         return
+    if std_gate % 2 != 1:
+        warn('std_gate must be odd, using ' + str(STD_GATE) +
+             ' gates as the default window')
+        std_gate = STD_GATE
     fir = get_fir(gs=gs, window=window)
     if fir is None:
         print('Fix window/gs to be even, failing ...')
@@ -138,15 +148,11 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         kd_lin = np.zeros_like(dp) + bad
         dp_lin = np.zeros_like(dp) + bad
         sd_lin = np.zeros_like(dp) + 100.0
-#        print('debug about to make fortran call')
-#        print('debug', np.shape(dz), np.shape(dp), np.shape(fir['coef']))
         for ray in np.arange(np.shape(dp)[0]):
             dpl = len(dp[ray])
-#           print('debug loop', ray, dpl, np.shape(dp[ray]), np.shape(dz[ray]))
-#           print('debug loop 2', fir['order'], fir['gain'], fir['coef'])
             kd_lin[ray], dp_lin[ray], sd_lin[ray] = calc_kdp_ray_fir(
                 dpl, dp[ray], dz[ray], rng[ray], thsd[ray],
-                nfilter, bad, fir['order'], fir['gain'], fir['coef'])
+                nfilter, bad, fir['order'], fir['gain'], fir['coef'], std_gate)
 #             kd_lin[ray], dp_lin[ray], sd_lin[ray] = \
 #                 _calc_kdp_ray(dp[ray], dz[ray], rng[ray], thsd=thsd,
 #                               nfilter=nfilter, bad=bad, fir=fir)
@@ -154,7 +160,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     elif np.ndim(dp) == 1:
         kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
             len(dp), dp, dz, rng, thsd, nfilter, bad,
-            fir['order'], fir['gain'], fir['coef'])
+            fir['order'], fir['gain'], fir['coef'], std_gate)
 #        kd_lin, dp_lin, sd_lin = _calc_kdp_ray(
 #             dp, dz, rng, thsd=thsd, fir=fir, nfilter=nfilter, bad=bad)
     else:

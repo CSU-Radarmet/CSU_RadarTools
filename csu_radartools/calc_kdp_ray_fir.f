@@ -35,7 +35,8 @@ cccc    Li Liu   Sep. 23, 92
 c-----------------------------------------------------------------
 
       subroutine calc_kdp_ray_fir(ngates, dp, dz, rng, thsd, nf,
-     +bad, fir_order, fir_gain, fir_coeff, kd_lin, dp_lin, sd_lin)
+     +bad, fir_order, fir_gain, fir_coeff, kd_lin, dp_lin, sd_lin,
+     +std_gate)
 c     """
 c     Arguments
 c     ---------
@@ -46,6 +47,7 @@ c     thsd = Scalar or 1D ray of diff phase stddev thresholds
 c     nf = Number of times to filter the data
 c     bad = Bad/missing data value
 c     fir = Dictionary containing FIR filter parameters
+c     std_gate = Number of gates to use for diff phase stddev calc
 
 c     Returns
 c     -------
@@ -64,6 +66,7 @@ c     # Define needed variables
       integer, intent(in) :: fir_order
       real*4, intent(in) :: fir_gain
       real*4, intent(in) :: fir_coeff(:)
+      integer*4, intent(in) :: std_gate
       real*4, intent(out) :: kd_lin(ngates)
       real*4, intent(out) :: dp_lin(ngates)
       real*4, intent(out) :: sd_lin(ngates)
@@ -74,8 +77,8 @@ c     Internal
       integer*4 index1, index2, j, N, half_nadp
       REAL*4 X, A, V, W
 
-c     # Half window size for calculating stdev phase (fixed @ 11 gates)
-      half_std_win = 5
+c     # Half window size for calculating stdev phase
+      half_std_win = (std_gate - 1) / 2
 c     Half window size for FIR filtering
       half_fir_win = fir_order / 2
 
