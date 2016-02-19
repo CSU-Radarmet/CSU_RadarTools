@@ -51,10 +51,10 @@ import numpy as np
 from numpy import linalg
 from scipy.signal import firwin
 from warnings import warn
-from calc_kdp_ray_fir import calc_kdp_ray_fir
+# from calc_kdp_ray_fir import calc_kdp_ray_fir
 # import time
 
-VERSION = '1.5'
+VERSION = '1.5.1'
 
 # Used by FIR coefficient function (get_fir)
 FIR_GS = 150.0
@@ -150,19 +150,22 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
         sd_lin = np.zeros_like(dp) + 100.0
         for ray in np.arange(np.shape(dp)[0]):
             dpl = len(dp[ray])
-            kd_lin[ray], dp_lin[ray], sd_lin[ray] = calc_kdp_ray_fir(
-                dpl, dp[ray], dz[ray], rng[ray], thsd[ray],
-                nfilter, bad, fir['order'], fir['gain'], fir['coef'], std_gate)
-#             kd_lin[ray], dp_lin[ray], sd_lin[ray] = \
-#                 _calc_kdp_ray(dp[ray], dz[ray], rng[ray], thsd=thsd,
-#                               nfilter=nfilter, bad=bad, fir=fir)
+#             kd_lin[ray], dp_lin[ray], sd_lin[ray] = calc_kdp_ray_fir(
+#                 dpl, dp[ray], dz[ray], rng[ray], thsd[ray],
+#                 nfilter, bad, fir['order'], fir['gain'], fir['coef'],
+#                 std_gate)
+            kd_lin[ray], dp_lin[ray], sd_lin[ray] = \
+                _calc_kdp_ray(dp[ray], dz[ray], rng[ray], thsd=thsd[ray],
+                              nfilter=nfilter, bad=bad, fir=fir,
+                              std_gate=std_gate)
     # Or
     elif np.ndim(dp) == 1:
-        kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
-            len(dp), dp, dz, rng, thsd, nfilter, bad,
-            fir['order'], fir['gain'], fir['coef'], std_gate)
-#        kd_lin, dp_lin, sd_lin = _calc_kdp_ray(
-#             dp, dz, rng, thsd=thsd, fir=fir, nfilter=nfilter, bad=bad)
+        kd_lin, dp_lin, sd_lin = _calc_kdp_ray(
+            dp, dz, rng, thsd=thsd, fir=fir, nfilter=nfilter, bad=bad,
+            std_gate=std_gate)
+#         kd_lin, dp_lin, sd_lin = calc_kdp_ray_fir(
+#             len(dp), dp, dz, rng, thsd, nfilter, bad,
+#             fir['order'], fir['gain'], fir['coef'], std_gate)
     else:
         warn('Need 2D or 1D array, failing ...')
         return
@@ -190,7 +193,8 @@ def get_fir(gs=FIR_GS, window=FIR_WIN):
     return fir
 
 
-def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
+def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None,
+                  std_gate=STD_GATE):
     """
     Arguments
     ---------
@@ -201,6 +205,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     nfilter = Number of times to filter the data
     bad = Bad/missing data value
     fir = Dictionary containing FIR filter parameters
+    std_gate = Number of gates used to calculated standard deviation of phase
 
     Returns
     -------
@@ -216,8 +221,8 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
         thsd = np.zeros_like(rng) + thsd
     length = len(rng)
     lin = np.arange(length)
-    # Half window size for calculating stdev of phase (fixed @ 11 gates)
-    half_std_win = 5
+    # Half window size for calculating stdev of phase (default = 11 gates)
+    half_std_win = (std_gate - 1) / 2
     half_fir_win = fir['order'] // 2  # Half window size for FIR filtering
     y = np.zeros(length) + bad  # Dummy variable to store filtered phase
     z = 1.0 * dp  # Dummy variable to store un/pre-processed phase
@@ -238,6 +243,7 @@ def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     # ------------- MAIN LOOP of Phidp Adaptive Filtering ------------------
     # FIR FILTER SECTION
     for mloop in np.arange(nfilter):
+        mask = None
         mask = np.logical_and(sd_lin <= thsd, z != bad)
         for i in lin[mask]:
             index1 = np.int32(i - half_fir_win)
