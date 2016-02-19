@@ -21,7 +21,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
 from .beta_functions import get_mbf_sets_summer
-from calc_kdp_ray_fir import hid_beta_f
+# from calc_kdp_ray_fir import hid_beta_f
 
 DEFAULT_WEIGHTS = {'DZ': 1.5, 'DR': 0.8, 'KD': 1.0, 'RH': 0.8, 'LD': 0.5,
                    'T': 0.4}
@@ -206,11 +206,12 @@ def _get_weight_sum(fhc_vars, weights, method, verbose):
 def _calculate_test(fhc_vars, weights, radar_data, sets,
                     varlist, weight_sum, c, sz):
     """Loop over every var to get initial value for each HID species 'test'"""
-#    test = (np.sum(np.array([fhc_vars[key] * weights[key] *
-#                            hid_beta(radar_data[key], sets[key]['a'][c],
-#                            sets[key]['b'][c], sets[key]['m'][c])
+#     test = (np.sum(np.array([fhc_vars[key] * weights[key] *
+#                             hid_beta_f(sz, radar_data[key],
+#                             sets[key]['a'][c],
+#                             sets[key]['b'][c], sets[key]['m'][c])
     test = (np.sum(np.array([fhc_vars[key] * weights[key] *
-                            hid_beta_f(sz, radar_data[key], sets[key]['a'][c],
+                            hid_beta(radar_data[key], sets[key]['a'][c],
                             sets[key]['b'][c], sets[key]['m'][c])
             for key in varlist if key in radar_data.keys()]),
             axis=0))/weight_sum
@@ -239,26 +240,37 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
             if use_temp:
                 if pol_flag:
                     # *= multiplies by new value and stores in test
-                    test *= hid_beta_f(sz, radar_data['T'], sets['T']['a'][c],
-                                       sets['T']['b'][c], sets['T']['m'][c])
+                    # test *= hid_beta_f(
+                    #     sz, radar_data['T'], sets['T']['a'][c],
+                    #     sets['T']['b'][c], sets['T']['m'][c])
+                    test *= hid_beta(radar_data['T'], sets['T']['a'][c],
+                                     sets['T']['b'][c], sets['T']['m'][c])
                     # print 'in loc 2'
                     # if test.max() > 1: #Maximum of test should never be > 1
                     #     print 'Fail loc 2, test.max() =', test.max()
                     #     return None
                 else:
-                    test = hid_beta_f(sz, radar_data['T'], sets['T']['a'][c],
-                                      sets['T']['b'][c], sets['T']['m'][c])
+                    # test = hid_beta_f(sz, radar_data['T'], sets['T']['a'][c],
+                    #                   sets['T']['b'][c], sets['T']['m'][c])
+                    test = hid_beta(radar_data['T'], sets['T']['a'][c],
+                                    sets['T']['b'][c], sets['T']['m'][c])
             if fhc_vars['DZ']:
                 if pol_flag or use_temp:
-                    test *= hid_beta_f(
-                        sz, radar_data['DZ'], sets['DZ']['a'][c],
+                    test *= hid_beta(
+                        radar_data['DZ'], sets['DZ']['a'][c],
                         sets['DZ']['b'][c], sets['DZ']['m'][c])
+                    # test *= hid_beta_f(
+                    #     sz, radar_data['DZ'], sets['DZ']['a'][c],
+                    #     sets['DZ']['b'][c], sets['DZ']['m'][c])
                     # if test.max() > 1:  # Max of test should never be > 1
                     #     print 'Fail loc 3, test.max() =', test.max()
                     #     return None
                 else:
-                    test = hid_beta_f(sz, radar_data['DZ'], sets['DZ']['a'][c],
-                                      sets['DZ']['b'][c], sets['DZ']['m'][c])
+                    # test = hid_beta_f(
+                    #     sz, radar_data['DZ'], sets['DZ']['a'][c],
+                    #     sets['DZ']['b'][c], sets['DZ']['m'][c])
+                    test = hid_beta(radar_data['DZ'], sets['DZ']['a'][c],
+                                    sets['DZ']['b'][c], sets['DZ']['m'][c])
         elif 'linear' in method:  # Just a giant weighted sum
             if pol_flag:
                 test = _calculate_test(fhc_vars, weights, radar_data, sets,

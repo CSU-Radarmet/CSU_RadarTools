@@ -39,7 +39,6 @@ setup(
           Python tools for polarimetric radar retrievals.
           To access, use the following in your analysis code:
           from csu_radartools import csu_fhc
-          """,
-      ext_modules = [Extension('calc_kdp_ray_fir',
-                     [PACKAGES[0]+'/calc_kdp_ray_fir.f'])],
-      )
+          """,)
+#       ext_modules = [Extension('calc_kdp_ray_fir',
+#                      [PACKAGES[0]+'/calc_kdp_ray_fir.f'])],
