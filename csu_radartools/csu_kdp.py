@@ -2,13 +2,16 @@
 Timothy James Lang
 tjlangco@gmail.com
 
-Last Updated 17 November 2015 (Python 2.7/3.4)
+Last Updated 03 May 2016 (Python 2.7/3.4)
 Last Updated 26 July 2005 (IDL)
 
-csu_kdp v1.5.1
+csu_kdp v1.6
 
 Change Log
 ----------
+v1.6 Major Changes (05/03/2016):
+1. Cython now an option for speeding up KDP routines.
+
 v1.5.1 Major Changes (12/08/2015):
 1. Made number of gates used for standard deviation calculation adjustable.
 
@@ -40,11 +43,6 @@ v1.1 Major Changes (04/27/2015):
    range) as well as 1D inputs (range only). If 2D, rng needs to be 2D as
    well. However, thsd should remain a scalar, or 1D and only vary by range.
 
-To Do
------
-1. Performance improvements
-2. Make object-oriented
-
 """
 from __future__ import division, print_function
 import numpy as np
@@ -54,7 +52,7 @@ from warnings import warn
 from calc_kdp_ray_fir import calc_kdp_ray_fir
 # import time
 
-VERSION = '1.5'
+VERSION = '1.6'
 
 # Used by FIR coefficient function (get_fir)
 FIR_GS = 150.0
@@ -140,6 +138,13 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     if fir is None:
         print('Fix window/gs to be even, failing ...')
         return None, None, None
+
+    # Following lines ensure right dtype passed to Cython extensions (if used)
+    dp = np.array(dp).astype('float32')
+    dz = np.array(dz).astype('float32')
+    rng = np.array(rng).astype('float32')
+    fir['coef'] = np.array(fir['coef']).astype('float64')
+
     if not hasattr(thsd, '__len__'):
         thsd = np.zeros_like(dp) + thsd
     # If array is 2D, then it assumes the first index refers to azimuth.
@@ -192,6 +197,9 @@ def get_fir(gs=FIR_GS, window=FIR_WIN):
 
 def _calc_kdp_ray(dp, dz, rng, thsd=12, nfilter=1, bad=-32768, fir=None):
     """
+    Pure Python approach to filtering phase and estimating KDP. Currently
+    disabled due to performance issues.
+
     Arguments
     ---------
     dp = 1D ray of differential phase
