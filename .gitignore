@@ -4,4 +4,6 @@ dist
 fortran
 notebooks/.ipynb_checkpoints
 notebooks/CSU_RadarTools_Demo-AMS_OSRSC.ipynb
+notebooks/Cython_Testing_and_Development.ipynb
 references
+*.c

@@ -13,6 +13,7 @@ tjlangoc@gmail.com
 08/05/2015 - Python 3
 11/20/2015 - Sped up hid_beta by using f2py + working w/ 1-D flattened arrays
              that are later reshaped to the necessary shape.
+05/03/2016 - Cython now an option for speeding up the hid_beta routines.
 
 """
 
@@ -171,9 +172,11 @@ def _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose):
                 shp = np.shape(var)
                 sz = np.size(var)
             if np.ndim(var) > 1:
-                radar_data[key] = np.array(var).ravel()
+                radar_data[key] = np.array(var).ravel().astype('float32')
+            elif np.ndim(var) == 1:
+                radar_data[key] = np.array(var).astype('float32')
             else:
-                radar_data[key] = np.array(var)
+                radar_data[key] = np.array([var]).astype('float32')
             fhc_vars[key] = 1
         else:
             fhc_vars[key] = 0
