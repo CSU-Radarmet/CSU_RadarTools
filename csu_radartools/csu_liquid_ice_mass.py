@@ -148,7 +148,13 @@ def get_delta_thresh(z, Hfrz):
 
 
 def get_linear_fits(method='cifelli'):
-    """Get coefficients from linear fits to Zdp and Zh"""
+    """
+    Get coefficients from linear fits to Zdp and Zh
+    method = str, Reference for method
+        'cifelli': Cifelli et al. (2002) - Amazon
+        'cr1995': Carey and Rutledge (1995) - Colorado
+        Default: Carey and Rutledge (2000) - Darwin
+    """
     # TJL - Does Carey and Rutledge (1995) have another rain line?
     if method == 'cifelli':
         # These are Cifelli et al. (2002) for Amazon
