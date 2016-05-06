@@ -69,7 +69,7 @@ def calc_rain_kdp(kdp, a=40.5, b=0.85):
     return a * kdp**b
 
 
-def calc_blended_rain(dz=None, zdr=None, kdp=None, ice_flag=False,
+def calc_blended_rain(dz=None, zdr=None, kdp=None, ice_flag=False, band='S',
                       thresh_dz=38.0, thresh_zdr=0.5, thresh_kdp=0.3,
                       thresh_frac_ice=0.1, thresh_nexrad=53.0, a=300.0, b=1.4,
                       fit_a=None, fit_b=None, method='cr1995'):
@@ -133,9 +133,9 @@ def calc_blended_rain(dz=None, zdr=None, kdp=None, ice_flag=False,
     r_dz_rainonly = calc_rain_nexrad(dzrain, thresh_nexrad, a=a, b=b)
 
     # Conditions
-    cond_ice = fi <= thresh_frac_ice
+    cond_ice = fi < thresh_frac_ice
     cond_kdp = kdp >= thresh_kdp
-    cond_dz = dz > thresh_dz
+    cond_dz = dz >= thresh_dz
     cond_zdr = zdr >= thresh_zdr
     cond_dz_kdp = np.logical_and(cond_dz, cond_kdp)
     # Set of method choices
@@ -174,7 +174,7 @@ def calc_blended_rain(dz=None, zdr=None, kdp=None, ice_flag=False,
             return r_blended, meth, zdp, fi
 
 
-def csu_hidro_rain(dz=None, zdr=None, kdp=None, fhc=None,
+def csu_hidro_rain(dz=None, zdr=None, kdp=None, fhc=None, band='S',
                    thresh_dz=38.0, thresh_zdr=0.5, thresh_kdp=0.3,
                    thresh_nexrad=53.0, a=300.0, b=1.4):
     """
@@ -221,7 +221,7 @@ def csu_hidro_rain(dz=None, zdr=None, kdp=None, fhc=None,
     cond_rain_a = np.logical_or(fhc == 1, fhc == 2)
     cond_rain = np.logical_or(fhc == 10, cond_rain_a)
     cond_kdp = kdp >= thresh_kdp
-    cond_dz = dz > thresh_dz
+    cond_dz = dz >= thresh_dz
     cond_zdr = zdr >= thresh_zdr
     cond_dz_kdp = np.logical_and(cond_dz, cond_kdp)
     cond_dz_kdp_zdr = np.logical_and(cond_dz_kdp, cond_zdr)
