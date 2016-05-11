@@ -37,7 +37,7 @@ routines have been substantially altered.</b>
 To access, use the following in your analysis code:
 ```
 from csu_radartools import (csu_fhc, csu_liquid_ice_mass, csu_blended_rain, csu_dsd,
-                            csu_kdp, csu_misc, fundamentals, common)
+                            csu_kdp, csu_misc, fundamentals)
 ```
 
 For help information do help on individual modules. There is also a demonstration IPython notebook in the notebooks directory that covers all the modules.

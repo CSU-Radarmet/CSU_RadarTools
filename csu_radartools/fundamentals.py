@@ -17,7 +17,8 @@ Rinehart (1997), Radar for Meteorologists.
 Jorgensen (1983; JCAM), Feasibility Test of an Airborne Pulse-Doppler
     Meteorological Radar.
 Bech et al. (2003; JAOT), The Sensitivity of Single Polarization Weather Radar
-    Beam Blockage Correction to Variability in the Vertical Refractivity Gradient.
+    Beam Blockage Correction to Variability in the Vertical Refractivity
+    Gradient.
 Aydin et al. (1986; JCAM), Remote Sensing of Hail with Dual Linear
     Polarization Radar
 
@@ -25,15 +26,17 @@ Nick Guy - 10 May 2016, Ported from PyRadarMet
 """
 import numpy as np
 
-speed_of_light = 3e8 # Speed of light [m/s]
-kBoltz = 1.381e-23 # Boltzmann's constant [ m^2 kg s^-2 K^-1]
-earth_radius = 6371000 # Earth's average radius [m] assuming sphericity
-r43 = earth_radius * 4./3. # 4/3 Approximation effective radius for standard atmosphere [m]
+speed_of_light = 3e8  # Speed of light [m/s]
+kBoltz = 1.381e-23  # Boltzmann's constant [ m^2 kg s^-2 K^-1]
+earth_radius = 6371000.  # Earth's average radius [m] assuming sphericity
+r43 = earth_radius * 4./3.
 # Earth radius according to International Union of Geodesy and Geophysics
+# r43 is 4/3 Approximation effective radius for standard atmosphere [m]
 
-##############
-##  System  ##
-##############
+############
+#  System  #
+############
+
 
 def gain_Pratio(p1, p2):
     """
@@ -56,16 +59,16 @@ def gain_Pratio(p1, p2):
     return 10. * np.log10(np.asarray(p1) / np.asarray(p2))
 
 
-def freq(lam):
+def freq(wavelength):
     """
     Frequency [Hz] given wavelength.
 
     Parameters
     ----------
-    lam : float or array
+    wavelength : float or array
         Wavelength [m]
     """
-    return speed_of_light / np.asarray(lam)
+    return speed_of_light / np.asarray(wavelength)
 
 
 def wavelength(freq):
@@ -109,7 +112,7 @@ def pulse_duration(tau):
     return 2 * np.asarray(tau) / speed_of_light
 
 
-def radar_const(power_t, gain, tau, lam, bw_h, bw_v, aloss, rloss):
+def radar_const(power_t, gain, tau, wavelength, bw_h, bw_v, aloss, rloss):
     """
     Radar constant. Unitless.
 
@@ -123,7 +126,7 @@ def radar_const(power_t, gain, tau, lam, bw_h, bw_v, aloss, rloss):
         Antenna Gain [dB]
     tau : float
         Pulse Width [s]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     bw_h : float
         Horizontalntenna beamwidth [degrees]
@@ -148,11 +151,11 @@ def radar_const(power_t, gain, tau, lam, bw_h, bw_v, aloss, rloss):
              bw_hr * bw_vr * alosslin * rlosslin)
 
     # Calculate the denominator
-    Denom = 1024. * np.log(2) * lam**2
+    Denom = 1024. * np.log(2) * wavelength**2
     return Numer/Denom
 
 
-def ant_eff_area(gain, lam):
+def ant_eff_area(gain, wavelength):
     """
     Antenna effective area. [m^-2]
 
@@ -162,12 +165,12 @@ def ant_eff_area(gain, lam):
     ----------
     gain : float or array
         Antenna Gain [dB]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     """
     # Convert from dB to linear units
     gainlin = 10**(np.asarray(gain) / 10.)
-    return gainlin * lam**2 / (4 * np.pi)
+    return gainlin * wavelength**2 / (4 * np.pi)
 
 
 def power_target(power_t, gain, areat, r):
@@ -192,9 +195,10 @@ def power_target(power_t, gain, areat, r):
     return (power_t * gainlin * areat) / (4 * np.pi * np.asarray(r)**2)
 
 
-def xsec_bscatter_sphere(diam, lam, dielectric=0.93):
+def xsec_bscatter_sphere(diam, wavelength, dielectric=0.93):
     """
-    Backscatter cross-sectional area [m^-2] of a sphere using the Rayleigh approximation.
+    Backscatter cross-sectional area [m^-2] of a sphere using
+    the Rayleigh approximation.
 
     From Rinehart (1997), Eqn 4.9 and 5.7
 
@@ -202,7 +206,7 @@ def xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     ----------
     diam : float or array
         Diamter of target [m]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     dielectric : float
         Dielectric factor [unitless]
@@ -210,20 +214,21 @@ def xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     Notes
     -----
     The Rayleigh approximation is good when the diamter of a spherical particle
-    is much smaller than the wavelength of the radar (D/wavelength= 1/16).  This
-    condition leads to the relationship that the area is proportional to the
-    sixth power of the diameter.
+    is much smaller than the wavelength of the radar (D/wavelength= 1/16).
+    This condition leads to the relationship that the area is proportional
+    to the sixth power of the diameter.
 
     The default is for a dielectric factor value for water.  This can be
     changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
     diameters or K=0.176 for particle sizes of equivalent ice spheres.
     """
-    return (np.pi**5 * dielectric**2 * np.asarray(diam)**6) / lam**4
+    return (np.pi**5 * dielectric**2 * np.asarray(diam)**6) / wavelength**4
 
 
-def norm_xsec_bscatter_sphere(diam, lam, dielectric=0.93):
+def norm_xsec_bscatter_sphere(diam, wavelength, dielectric=0.93):
     """
-    Normalized Backscatter cross-sectional area [m^2] of a sphere using the Rayleigh approximation.
+    Normalized Backscatter cross-sectional area [m^2] of a sphere using
+    the Rayleigh approximation.
 
     From Rinehart (1997), Eqn 4.9 and 5.7 and Battan Ch. 4.5
 
@@ -231,7 +236,7 @@ def norm_xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     ----------
     diam : float or array
         Diamter of targer [m]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     dielectric : float
         Dielectric factor [unitless]
@@ -239,9 +244,9 @@ def norm_xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     Notes
     -----
     The Rayleigh approximation is good when the diamter of a spherical particle
-    is much smaller than the wavelength of the radar (D/wavelength= 1/16).  This
-    condition leads to the relationship that the area is proportional to the
-    sixth power of the diameter.
+    is much smaller than the wavelength of the radar (D/wavelength= 1/16).
+    This condition leads to the relationship that the area is proportional
+    to the sixth power of the diameter.
 
     The default is for a dielectric factor value for water.  This can be
     changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
@@ -249,11 +254,11 @@ def norm_xsec_bscatter_sphere(diam, lam, dielectric=0.93):
     """
 
     # Calculate the cross-sectional backscatter area
-    sig = xsec_bscatter_sphere(np.asarray(diam), lam, dielectric)
-    return sig/ (np.pi * (np.asarray(diam)/2.)**2)
+    sig = xsec_bscatter_sphere(np.asarray(diam), wavelength, dielectric)
+    return sig / (np.pi * (np.asarray(diam)/2.)**2)
 
 
-def size_param(diam, lam):
+def size_param(diam, wavelength):
     """
     Size parameter calculation. Unitless.
 
@@ -263,23 +268,26 @@ def size_param(diam, lam):
     ----------
     diam : float or float
         Diamter of target [m]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
 
     Notes
     -----
-    The size paramter can be used along with the backscattering cross-section to
-    distinguish ice and water dielectric characteristics.  For example:
+    The size paramter can be used along with the backscattering cross-section
+    to distinguish ice and water dielectric characteristics.
+
+    For example:
     Alpha < 2 the backscattering cross-section of ice is smaller than water,
     Alpha > 2 the opposite is true due to the fact that absorption in water
     exceeds that in ice.
     """
-    return 2 * np.pi * np.asarray(diam)/2. / lam
+    return 2 * np.pi * np.asarray(diam)/2. / wavelength
 
 
-def power_return_target(power_t, gain, lam, sig, r):
+def power_return_target(power_t, gain, wavelength, sig, r):
     """
-    Power [W] returned y target located at the center of the antenna beam pattern.
+    Power [W] returned y target located at the center of the antenna
+    beam pattern.
 
     From Rinehart (1997), Eqn 4.7
 
@@ -289,7 +297,7 @@ def power_return_target(power_t, gain, lam, sig, r):
         Transmitted power [W]
     gain : float
         Antenna gain [dB]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     sig : float
         Backscattering cross-sectional area of target [m^2]
@@ -298,7 +306,7 @@ def power_return_target(power_t, gain, lam, sig, r):
     """
     # Convert from dB to linear units
     gainlin = 10**(gain/10.)
-    return ((power_t * gainlin**2 * lam**2 * sig) /
+    return ((power_t * gainlin**2 * wavelength**2 * sig) /
             (64 * np.pi**3 * np.asarray(r)**4))
 
 
@@ -324,28 +332,29 @@ def thermal_noise(bandwidth, Units, noise_temp=290.):
     # Calculate the noise, convert if requested
     noise = kBoltz * noise_temp * np.asarray(bandwidth)
 
-    if Units.upper()=='W':
+    if Units.upper() == 'W':
         noiset = noise
-    elif Units.upper()=='DBM':
+    elif Units.upper() == 'DBM':
         noiset = 10. * np.log10(noise/10**-3)
     else:
         print("Units must be in 'W' or 'dBm'")
         noiset = np.nan
     return noiset
 
-###############
-##  Doppler  ##
-###############
+#############
+#  Doppler  #
+#############
 
-def freq(lam):
+
+def freq(wavelength):
     """Frequency [Hz] given wavelength.
 
     Parameters
     ----------
-    lam : float or array
+    wavelength : float or array
         Wavelength [m]
     """
-    return speed_of_light / np.asarray(lam)
+    return speed_of_light / np.asarray(wavelength)
 
 
 def wavelength(freq):
@@ -394,7 +403,7 @@ def fmax(prf):
     return np.asarray(prf) / 2.
 
 
-def Vmax(PRF, lam):
+def Vmax(PRF, wavelength):
     """Nyquist velocity, or maximum unambiguous Doppler velocity (+ or -) [m/s].
 
     From Rinehart (1997), Eqn 6.7
@@ -403,10 +412,10 @@ def Vmax(PRF, lam):
     ----------
     PRF : float or array
         Radar pulse repetition frequency [Hz]
-    lam : float or array
+    wavelength : float or array
         Radar wavelength [m]
     """
-    return np.asarray(PRF) * lam / 4.
+    return np.asarray(PRF) * wavelength / 4.
 
 
 def Rmax(PRF):
@@ -422,10 +431,11 @@ def Rmax(PRF):
     return speed_of_light / (2. * np.asarray(PRF))
 
 
-def doppler_dilemma(varin, lam):
+def doppler_dilemma(varin, wavelength):
     """
     The "Doppler dilemma" is the fact that both the Nyquist velocity and
-    unambiguous maximum range of the radar are based upon the PRF of the system.
+    unambiguous maximum range of the radar are based upon the PRF of
+    the system.
 
     However, they are inversely proportional, meaning that increasing one
     requires a decrease in the other.  A trade-off inherent in Doppler radar
@@ -438,14 +448,15 @@ def doppler_dilemma(varin, lam):
     ----------
     varin : float or array
         Nyquist Velocity [m/s] or Maximum unambiguous range [m]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     """
-    return (speed_of_light * lam / 8.) / np.asarray(varin)
+    return (speed_of_light * wavelength / 8.) / np.asarray(varin)
 
-    ########################
-    ##  Mobile Platforms  ##
-    ########################
+    ######################
+    #  Mobile Platforms  #
+    ######################
+
 
 def Vshift(ground_speed, psi):
     """
@@ -475,14 +486,14 @@ def Vshift(ground_speed, psi):
     return np.asarray(ground_speed) * np.cos(np.deg2rad(psi))
 
 
-def Vmax_dual(lam, prf1, prf2):
+def Vmax_dual(wavelength, prf1, prf2):
     """Doppler velocity [m/s] from dual PRF scheme radar (+ or -).
 
     From Jorgensen (1983), Eqn 2
 
     Parameters
     ----------
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     prf1 : float
         First Pulse repetition frequency [Hz]
@@ -498,13 +509,14 @@ def Vmax_dual(lam, prf1, prf2):
     normal to the direction of motion
     """
 
-    Vmax = lam / (4 * ((1. / prf1) - (1. / prf2)))
+    Vmax = wavelength / (4 * ((1. / prf1) - (1. / prf2)))
 
     return Vmax
 
-################
-##  Geometry  ##
-################
+##############
+#  Geometry  #
+##############
+
 
 def r_effective(dndh=-39e-6):
     """
@@ -573,7 +585,7 @@ def ray_height(r, elev, h0, reff=r43):
     """
     # Convert earth's radius to km for common dN/dH values and then
     # multiply by 1000 to return radius in meters
-    term1 = (np.sqrt(np.asarray(r)**2 +reff**2 +
+    term1 = (np.sqrt(np.asarray(r)**2 + reff**2 +
              2 * np.asarray(r) * reff * np.sin(np.deg2rad(elev))))
     h = term1 - reff + h0
     return h
@@ -627,7 +639,8 @@ def sample_vol_gauss(r, bw_h, bw_v, pulse_length):
     This form assumes a Gaussian beam shape for transmitted energy and is more
     realistic than the sample_vol_ideal.  Derived by Probert-Jones (1962).
     """
-    Numer = np.pi * np.asarray(r)**2 * np.deg2rad(bw_h) * np.deg2rad(bw_v) * pulse_length
+    Numer = (np.pi * np.asarray(r)**2 * np.deg2rad(bw_h) *
+             np.deg2rad(bw_v) * pulse_length)
     Denom = 16. * np.log(2)
 
     SVol = Numer / Denom
@@ -702,7 +715,8 @@ def beam_block_frac(Th, Bh, a):
     # radar beam (Bech et al. (2003), Fig.3)
     y = Th - Bh
 
-    Numer = (y * np.sqrt(a**2 - y**2)) + (a**2 * np.arcsin(y/a)) + (np.pi * a**2 /2.)
+    Numer = ((y * np.sqrt(a**2 - y**2)) + (a**2 * np.arcsin(y/a)) +
+             (np.pi * a**2 / 2.))
 
     Denom = np.pi * a**2
 
@@ -710,9 +724,10 @@ def beam_block_frac(Th, Bh, a):
 
     return PBB
 
-#################
-##  Variables  ##
-#################
+###############
+#  Variables  #
+###############
+
 
 def reflectivity(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
                  aloss, rloss, power_return, r, dielectric=0.93):
@@ -747,12 +762,14 @@ def reflectivity(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
     Notes
     -----
     This routine calls the radar_constant function.
+
     The default is for a dielectric factor value for water.  This can be
-        changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
-        diameters or K=0.176 for particle sizes of equivalent ice spheres.
+    changed by the user, e.g. K=0.208 for particle sizes of equivalent melted
+    diameters or K=0.176 for particle sizes of equivalent ice spheres.
     """
     # Call the radar constant function
-    C1 = radar_constant(power_t, gain, pulse_width, wavelength, bw_h, bw_v, aloss, rloss)
+    C1 = radar_constant(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
+                        aloss, rloss)
     return power_return * np.asarray(r)**2 / (C1 * dielectric**2)
 
 
@@ -805,7 +822,8 @@ def cdr(refl_parallel, refl_orthogonal):
 
     If arrays are used, either for one okay, or both must be the same length.
     """
-    return 10. * np.log10(np.asarray(refl_parallel)/np.asarray(refl_orthogonal))
+    return 10. * np.log10(
+        np.asarray(refl_parallel)/np.asarray(refl_orthogonal))
 
 
 def ldr(z_h, z_v):
@@ -891,7 +909,7 @@ def zdp(z_h, z_v):
 
     zdp = np.full_like(zh, np.nan)
     good = np.where(zh > zv)
-    zdp[good] = 10.* np.log10(zh[good] - zv[good])
+    zdp[good] = 10. * np.log10(zh[good] - zv[good])
     return zdp
 
 
@@ -917,7 +935,8 @@ def hdr(dbz_h, zdr):
 
     Considerations for this equation (see paper for more details):
        1) Standar error of disdrometer data allowed for
-       2) Drop oscillation accounted for based on 50% model of Seliga et al (1984)
+       2) Drop oscillation accounted for based on 50% model of
+          Seliga et al (1984)
        3) Lower (27) bound chose to provide constant Zh ref level
        4) Upper cutoff of 60 (may be too low)
 
@@ -936,11 +955,12 @@ def hdr(dbz_h, zdr):
     # Calculate HDR
     return np.asarray(dbz_h) - f
 
-###################
-##  Attenuation  ##
-###################
+#################
+#  Attenuation  #
+#################
 
-def abs_coeff(D, lam, m):
+
+def abs_coeff(diam, wavelength, m):
     """
     Absorption coefficient of a spherical particle. Unitless.
 
@@ -948,9 +968,9 @@ def abs_coeff(D, lam, m):
 
     Parameters
     ----------
-    D : float or array
+    diam : float or array
         Particle diameter [m]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     m : float
         Complex refractive index [unitless], in the form 7.14 - 2.89j
@@ -965,41 +985,31 @@ def abs_coeff(D, lam, m):
     Also see Doviak and Zrnic (1993), Fig. 3.3 caption.
     """
     Km_im = np.imag(-1 * k_complex(m))
-    Qa = (np.pi**2 * np.asarray(D)**3 / lam) * Km_im
+    Qa = (np.pi**2 * np.asarray(diam)**3 / wavelength) * Km_im
     return Qa
 
 
-def scat_coeff(D, lam, m):
+def scat_coeff(diam, wavelength, m):
     """
     Scattering coefficient of a spherical particle. Unitless.
 
-    Doviak and Zrnic (1993), Eqn 3.14b or Battan (1973), Eqn 6.5
+    Doviak and Zrnic (1993), Eqn 3.14b or Battan (1973), Eqn 6.4
 
     Parameters
     ----------
-    D : float or array
+    diam: float or array
         Particle diameter [m]
-    lam : float
+    wavelength: float
         Radar wavelength [m]
-    m : float
+    m: float
         Complex refractive index [unitless]
-
-    Notes
-    -----
-    An example from Battan (1973) is for water at 0C m=7.14-2.89j for a
-       wavelength of 3.21 cm and for ice m=1.78-0.0024j for
-       wavelength range from 1-10 cm.
-    See Battan (1973) Ch.4 , Tables 4.1 and 4.2 for values from
-       Gunn and East (1954).
-    Also see Doviak and Zrnic (1993), Fig. 3.3 caption.
     """
-
     Km_abs = np.absolute(k_complex(m))
-    Qs = (2 * np.pi**5 * np.asarray(D)**6 / (3 * lam**4) * (Km_abs**2)
+    Qs = 2 * np.pi**5 * np.asarray(diam)**6 / (3 * wavelength**4) * (Km_abs**2)
     return Qs
 
 
-def ext_coeff(D, lam, m):
+def ext_coeff(diam, wavelength, m):
     """
     Extinction coefficient of a spherical particle. Unitless.
 
@@ -1007,9 +1017,9 @@ def ext_coeff(D, lam, m):
 
     Parameters
     ----------
-    D : float or array
+    diam : float or array
         Particle diameter [m]
-    lam : float
+    wavelength : float
         Radar wavelength [m]
     m : float
         Complex refractive index [unitless]
@@ -1023,19 +1033,17 @@ def ext_coeff(D, lam, m):
        Gunn and East (1954).
     Also see Doviak and Zrnic (1993), Fig. 3.3 caption.
     """
-
-    Qa = abs_coeff(np.asarray(D), lam, m)
-    Qs = scat_coeff(np.asarray(D), lam, m)
+    Qa = abs_coeff(np.asarray(diam), wavelength, m)
+    Qs = scat_coeff(np.asarray(diam), wavelength, m)
     Qe = Qa + Qs
-
     return Qe
+
 
 def k_complex(m):
     """
-
     Parameters
     ----------
     m : float
         Complex refractive index [unitless]
     """
-    return ((m**2 - 1) / (m**2 + 2))
+    return (m**2 - 1) / (m**2 + 2)

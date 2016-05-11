@@ -12,6 +12,7 @@ import numpy as np
 ##  Arrays  ##
 ##############
 
+
 def _check_for_array(dz, zdr, kdp):
     len_flag = hasattr(dz, '__len__')
     if not len_flag:
@@ -23,6 +24,8 @@ def _check_for_array(dz, zdr, kdp):
 ########################
 ##  Unit Conversions  ##
 ########################
+
+
 def dbz2z(dbz):
     """
     Convert from log [dBZ] to linear Z [mm^6 m^−3] units.
@@ -33,6 +36,7 @@ def dbz2z(dbz):
         logarithmic reflectivity value
     """
     return 10.**(np.asarray(dbz)/10.)
+
 
 def linearize(dbz):
     return dbz2z(dbz)
