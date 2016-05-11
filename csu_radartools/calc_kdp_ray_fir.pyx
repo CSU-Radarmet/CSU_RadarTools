@@ -43,9 +43,9 @@ def LSE(double[:] x, double[:] y, int n, float bad):
 
 
 def calc_kdp_ray_fir(
-    int ngates, float[:] dp, float[:] dz, float[:] rng,
-    float[:] thsd, int nf, float bad, int fir_order, float fir_gain,
-    double[:] fir_coeff, int std_gate):
+        int ngates, float[:] dp, float[:] dz, float[:] rng,
+        float[:] thsd, int nf, float bad, int fir_order, float fir_gain,
+        double[:] fir_coeff, int std_gate):
     """
     Calculate KDP along a 1-D ray of radar data, using an FIR filter to first
     smooth the differential phase. Standard deviation of phase is also
