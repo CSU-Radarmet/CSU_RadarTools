@@ -32,7 +32,7 @@ def dbz2z(dbz):
 
     Parameters
     ----------
-    dBZ : float or array
+    dbz : float or array
         logarithmic reflectivity value
     """
     return 10.**(np.asarray(dbz)/10.)

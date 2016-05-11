@@ -27,7 +27,7 @@ Nick Guy - 10 May 2016, Ported from PyRadarMet
 import numpy as np
 
 speed_of_light = 3e8  # Speed of light [m/s]
-kBoltz = 1.381e-23  # Boltzmann's constant [ m^2 kg s^-2 K^-1]
+k_boltz = 1.381e-23  # Boltzmann's constant [ m^2 kg s^-2 K^-1]
 earth_radius = 6371000.  # Earth's average radius [m] assuming sphericity
 r43 = earth_radius * 4./3.
 # Earth radius according to International Union of Geodesy and Geophysics
@@ -147,12 +147,12 @@ def radar_const(power_t, gain, tau, wavelength, bw_h, bw_v, aloss, rloss):
     bw_vr = np.deg2rad(bw_v)
 
     # Calculate the numerator
-    Numer = (np.pi**3 * speed_of_light * power_t * gainlin**2 * tau *
+    numer = (np.pi**3 * speed_of_light * power_t * gainlin**2 * tau *
              bw_hr * bw_vr * alosslin * rlosslin)
 
     # Calculate the denominator
-    Denom = 1024. * np.log(2) * wavelength**2
-    return Numer/Denom
+    denom = 1024. * np.log(2) * wavelength**2
+    return numer/denom
 
 
 def ant_eff_area(gain, wavelength):
@@ -173,7 +173,7 @@ def ant_eff_area(gain, wavelength):
     return gainlin * wavelength**2 / (4 * np.pi)
 
 
-def power_target(power_t, gain, areat, r):
+def power_target(power_t, gain, areat, range):
     """
     Power [W] intercepted by target.
 
@@ -187,12 +187,12 @@ def power_target(power_t, gain, areat, r):
         Antenna gain [dB]
     areat : float
         Area of target [m^2]
-    r : float or array
+    range : float or array
         Distance to sample volume from radar [m]
     """
     # Convert from dB to linear units
     gainlin = 10**(gain / 10.)
-    return (power_t * gainlin * areat) / (4 * np.pi * np.asarray(r)**2)
+    return (power_t * gainlin * areat) / (4 * np.pi * np.asarray(range)**2)
 
 
 def xsec_bscatter_sphere(diam, wavelength, dielectric=0.93):
@@ -284,7 +284,7 @@ def size_param(diam, wavelength):
     return 2 * np.pi * np.asarray(diam)/2. / wavelength
 
 
-def power_return_target(power_t, gain, wavelength, sig, r):
+def power_return_target(power_t, gain, wavelength, sig, range):
     """
     Power [W] returned y target located at the center of the antenna
     beam pattern.
@@ -301,16 +301,16 @@ def power_return_target(power_t, gain, wavelength, sig, r):
         Radar wavelength [m]
     sig : float
         Backscattering cross-sectional area of target [m^2]
-    r : float or array
+    range : float or array
         Distance to sample volume from radar [m]
     """
     # Convert from dB to linear units
     gainlin = 10**(gain/10.)
     return ((power_t * gainlin**2 * wavelength**2 * sig) /
-            (64 * np.pi**3 * np.asarray(r)**4))
+            (64 * np.pi**3 * np.asarray(range)**4))
 
 
-def thermal_noise(bandwidth, Units, noise_temp=290.):
+def thermal_noise(bandwidth, units, noise_temp=290.):
     """
     Thermal noise power [W or 'dBm'].
 
@@ -320,9 +320,9 @@ def thermal_noise(bandwidth, Units, noise_temp=290.):
     ----------
     bandwidth : float or array
         Receiver bandwidth [Hz]
-    Units : float
+    units : float
         String of nits desired, can be 'W' or 'dBm'
-    Ts : float
+    noise_temp : float
         Reciever noise temperature [K]
 
     Notes
@@ -330,11 +330,11 @@ def thermal_noise(bandwidth, Units, noise_temp=290.):
     Reciever noise temp set to conventional 290K by default
     """
     # Calculate the noise, convert if requested
-    noise = kBoltz * noise_temp * np.asarray(bandwidth)
+    noise = k_boltz * noise_temp * np.asarray(bandwidth)
 
-    if Units.upper() == 'W':
+    if units.upper() == 'W':
         noiset = noise
-    elif Units.upper() == 'DBM':
+    elif units.upper() == 'DBM':
         noiset = 10. * np.log10(noise/10**-3)
     else:
         print("Units must be in 'W' or 'dBm'")
@@ -353,7 +353,7 @@ def fmax(prf):
 
     Parameters
     ----------
-    PRF : float or array
+    prf : float or array
         Pulse repetition frequency [Hz]
     """
     return np.asarray(prf) / 2.
@@ -375,13 +375,11 @@ def vmax(prf, wavelength):
 
 
 def nyquist(prf, wavelength):
-    """
-    Wrapper function for vmax.
-    """
+    """Wrapper function for vmax."""
     return vmax(prf, wavelength)
 
 
-def Rmax(prf):
+def rmax(prf):
     """Maximum unamiguous range [m].
 
     From Rinehart (1997), Eqn 6.11
@@ -392,6 +390,11 @@ def Rmax(prf):
         Pulse repetition frequency [Hz]
     """
     return speed_of_light / (2. * np.asarray(prf))
+
+
+def unambiguous_range(prf):
+    """Wrapper for rmax."""
+    return rmax(prf)
 
 
 def doppler_dilemma(varin, wavelength):
@@ -421,7 +424,7 @@ def doppler_dilemma(varin, wavelength):
     ######################
 
 
-def Vshift(ground_speed, psi):
+def vel_shift(ground_speed, psi):
     """
     Adjusted Doppler velocity [m/s] from a mobile platform.
     Shift in Doppler velocity from mobile perspective.
@@ -449,7 +452,7 @@ def Vshift(ground_speed, psi):
     return np.asarray(ground_speed) * np.cos(np.deg2rad(psi))
 
 
-def Vmax_dual(wavelength, prf1, prf2):
+def vmax_dual(wavelength, prf1, prf2):
     """Doppler velocity [m/s] from dual PRF scheme radar (+ or -).
 
     From Jorgensen (1983), Eqn 2
@@ -471,10 +474,13 @@ def Vmax_dual(wavelength, prf1, prf2):
     The fore/aft angle is defined as the angle fore or aft from a plane
     normal to the direction of motion
     """
+    return (wavelength / (4 * ((1. / prf1) - (1. / prf2))))
 
-    Vmax = wavelength / (4 * ((1. / prf1) - (1. / prf2)))
 
-    return Vmax
+def dual_nyquist(wavelength, prf1, prf2):
+    """Wrapper for vmax_dual."""
+    return vmax_dual(wavelength, prf1, prf2)
+
 
 ##############
 #  Geometry  #
@@ -495,15 +501,15 @@ def r_effective(dndh=-39e-6):
     Notes
     -----
     Effective radius of earth given a refraction.  If no refraction is given
-       a "standard atmosphere" is assumed, the valued needed to have straight
-       radar rays.
+    a "standard atmosphere" is assumed, the valued needed to have straight
+    radar rays.
     """
     # Convert earth's radius to km for common dN/dH values and then
     # multiply by 1000 to return radius in meters
     return (1. / ((1/(earth_radius/1000.)) + (dndh))) * 1000.
 
 
-def half_power_radius(r, bwhalf):
+def half_power_radius(range, bwhalf):
     """
     Half-power radius [m].
 
@@ -511,17 +517,17 @@ def half_power_radius(r, bwhalf):
 
     Parameters
     ----------
-    r : float or array
+    range : float or array
         Range [m]
     bwhalf : float
         Half-power beam width [degrees]
     """
     # Convert earth's radius to km for common dN/dH values and then
     # multiply by 1000 to return radius in meters
-    return (np.asarray(r) * np.deg2rad(bwhalf)) / 2.
+    return (np.asarray(range) * np.deg2rad(bwhalf)) / 2.
 
 
-def ray_height(r, elev, h0, reff=r43):
+def ray_height(range, elev, h0, reff=r43):
     """
     Center of radar beam height [m] calculation.
 
@@ -529,7 +535,7 @@ def ray_height(r, elev, h0, reff=r43):
 
     Parameters
     ----------
-    r : float or array
+    range : float or array
         Range from radar to point of interest [m]
     elev : float
         Elevation angle of radar beam [deg]
@@ -548,8 +554,8 @@ def ray_height(r, elev, h0, reff=r43):
     """
     # Convert earth's radius to km for common dN/dH values and then
     # multiply by 1000 to return radius in meters
-    term1 = (np.sqrt(np.asarray(r)**2 + reff**2 +
-             2 * np.asarray(r) * reff * np.sin(np.deg2rad(elev))))
+    term1 = (np.sqrt(np.asarray(range)**2 + reff**2 +
+             2 * np.asarray(range) * reff * np.sin(np.deg2rad(elev))))
     h = term1 - reff + h0
     return h
 
@@ -580,7 +586,7 @@ def sample_vol_ideal(r, bw_h, bw_v, pulse_length):
             np.deg2rad(bw_v)/2.) * (pulse_length/2.))
 
 
-def sample_vol_gauss(r, bw_h, bw_v, pulse_length):
+def sample_vol_gauss(range, bw_h, bw_v, pulse_length):
     """
     Sample volume [m^3] assuming transmitted energy in Gaussian beam shape.
 
@@ -588,7 +594,7 @@ def sample_vol_gauss(r, bw_h, bw_v, pulse_length):
 
     Parameters
     ----------
-    r  : float or array
+    range  : float or array
         Distance to sample volume from radar [m]
     bw_h : float
         Horizontal beamwidth [deg]
@@ -602,15 +608,15 @@ def sample_vol_gauss(r, bw_h, bw_v, pulse_length):
     This form assumes a Gaussian beam shape for transmitted energy and is more
     realistic than the sample_vol_ideal.  Derived by Probert-Jones (1962).
     """
-    Numer = (np.pi * np.asarray(r)**2 * np.deg2rad(bw_h) *
+    numer = (np.pi * np.asarray(range)**2 * np.deg2rad(bw_h) *
              np.deg2rad(bw_v) * pulse_length)
-    Denom = 16. * np.log(2)
+    denom = 16. * np.log(2)
 
-    SVol = Numer / Denom
+    SVol = numer / denom
     return SVol
 
 
-def range_correct(r, h, elev):
+def range_correct(range, height, elev):
     """
     A corrected range [m] from radar that takes into account the "loss" of
     ground distance because of the radar elevation angle.  This is a
@@ -620,9 +626,9 @@ def range_correct(r, h, elev):
 
     Parameters
     ----------
-    r  : float or array
+    range  : float or array
         Distance to sample volume from radar [m]
-    h : float
+    height : float
         Height of the center of radar volume [m]
     elev : float
         Elevation angle [deg]
@@ -635,29 +641,29 @@ def range_correct(r, h, elev):
        fix this in the future.
     """
     # Calculate the change in height along the ray
-    dh1 = h[1:] - h[:-1]
+    dh1 = hheight[1:] - hheight[:-1]
     # Add the 0th place in the ray at the beginning
-    dh2 = np.insert(dh1, 0, h[0])
+    dh2 = np.insert(dh1, 0, hheight[0])
 
     # Calculate the change in distance at each gate
     a90r = np.pi/2.  # 90 degrees in radians
     dr = dh2 / (np.tan(a90r - np.deg2rad(elev)))
 
     # Now calculate the corrected range at each gate
-    rnew = np.asarray(r) - np.cumsum(dr)
+    rnew = np.asarray(range) - np.cumsum(dr)
     return rnew
 
 
-def beam_block_frac(Th, Bh, a):
+def beam_block_frac(terrain, beam_height, a):
     """Partial beam blockage fraction. Unitless.
 
     From Bech et al. (2003), Eqn 2 and Appendix
 
     Parameters
     ----------
-    Th : float
+    terrain : float
         Terrain height [m]
-    Bh : float
+    beam_height : float
         Beam height [m]
     a : float
         Half power beam radius [m]
@@ -676,16 +682,13 @@ def beam_block_frac(Th, Bh, a):
 
     # First find the difference between the terrain and height of
     # radar beam (Bech et al. (2003), Fig.3)
-    y = Th - Bh
+    y = terrain - beam_height
 
-    Numer = ((y * np.sqrt(a**2 - y**2)) + (a**2 * np.arcsin(y/a)) +
+    numer = ((y * np.sqrt(a**2 - y**2)) + (a**2 * np.arcsin(y/a)) +
              (np.pi * a**2 / 2.))
 
-    Denom = np.pi * a**2
-
-    PBB = Numer / Denom
-
-    return PBB
+    denom = np.pi * a**2
+    return numer / denom
 
 ###############
 #  Variables  #
@@ -693,7 +696,7 @@ def beam_block_frac(Th, Bh, a):
 
 
 def reflectivity(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
-                 aloss, rloss, power_return, r, dielectric=0.93):
+                 aloss, rloss, power_return, range, dielectric=0.93):
     """
     Radar reflectivity [mm^6/m^3].
 
@@ -719,7 +722,7 @@ def reflectivity(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
         Dielectric factor [unitless]
     power_return : float
         Returned power [W]
-    r : float or array
+    range : float or array
         Range to target [m]
 
     Notes
@@ -733,7 +736,7 @@ def reflectivity(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
     # Call the radar constant function
     C1 = radar_constant(power_t, gain, pulse_width, wavelength, bw_h, bw_v,
                         aloss, rloss)
-    return power_return * np.asarray(r)**2 / (C1 * dielectric**2)
+    return power_return * np.asarray(range)**2 / (C1 * dielectric**2)
 
 
 def radial_velocity(frequency, wavelength):
