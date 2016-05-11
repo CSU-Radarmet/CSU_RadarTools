@@ -38,7 +38,7 @@ r43 = earth_radius * 4./3.
 ############
 
 
-def gain_Pratio(p1, p2):
+def antenna_gain(p1, p2):
     """
     Antenna gain [dB] via power ratio.
 
@@ -59,7 +59,7 @@ def gain_Pratio(p1, p2):
     return 10. * np.log10(np.asarray(p1) / np.asarray(p2))
 
 
-def freq(wavelength):
+def frequency(wavelength):
     """
     Frequency [Hz] given wavelength.
 
@@ -346,50 +346,6 @@ def thermal_noise(bandwidth, Units, noise_temp=290.):
 #############
 
 
-def freq(wavelength):
-    """Frequency [Hz] given wavelength.
-
-    Parameters
-    ----------
-    wavelength : float or array
-        Wavelength [m]
-    """
-    return speed_of_light / np.asarray(wavelength)
-
-
-def wavelength(freq):
-    """Wavelength [m] given frequency.
-
-    Parameters
-    ----------
-    freq : float or array
-        Frequency [Hz]
-    """
-    return speed_of_light / np.asarray(freq)
-
-
-def pulse_duration(tau):
-    """Pulse duration [s] from pulse length.
-
-    Parameters
-    ----------
-    tau : float or array
-        Pulse length [m]
-    """
-    return 2 * np.asarray(tau) / speed_of_light
-
-
-def pulse_length(pdur):
-    """Pulse length [m] from pulse duration.
-
-    Parameters
-    ----------
-    pDur : float or array
-        Pulse duration [s]
-    """
-    return speed_of_light * np.asarray(pdur) / 2
-
-
 def fmax(prf):
     """Maximum frequency [Hz] given PRF.
 
@@ -403,32 +359,39 @@ def fmax(prf):
     return np.asarray(prf) / 2.
 
 
-def Vmax(PRF, wavelength):
+def vmax(prf, wavelength):
     """Nyquist velocity, or maximum unambiguous Doppler velocity (+ or -) [m/s].
 
     From Rinehart (1997), Eqn 6.7
 
     Parameters
     ----------
-    PRF : float or array
+    prf : float or array
         Radar pulse repetition frequency [Hz]
     wavelength : float or array
         Radar wavelength [m]
     """
-    return np.asarray(PRF) * wavelength / 4.
+    return np.asarray(prf) * wavelength / 4.
 
 
-def Rmax(PRF):
+def nyquist(prf, wavelength):
+    """
+    Wrapper function for vmax.
+    """
+    return vmax(prf, wavelength)
+
+
+def Rmax(prf):
     """Maximum unamiguous range [m].
 
     From Rinehart (1997), Eqn 6.11
 
     Parameters
     ----------
-    PRF : float or array
+    prf : float or array
         Pulse repetition frequency [Hz]
     """
-    return speed_of_light / (2. * np.asarray(PRF))
+    return speed_of_light / (2. * np.asarray(prf))
 
 
 def doppler_dilemma(varin, wavelength):
