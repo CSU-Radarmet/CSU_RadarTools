@@ -60,7 +60,7 @@ setup(
           To access, use the following in your analysis code:
           from csu_radartools import (
               csu_fhc, csu_kdp, csu_dsd, csu_liquid_ice_mass, csu_misc,
-              csu_blended_rain)
+              csu_blended_rain, fundamentals)
           """,
       ext_modules = extensions,
       include_dirs = [numpy.get_include()]
