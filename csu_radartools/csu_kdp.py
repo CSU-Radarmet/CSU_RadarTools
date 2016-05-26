@@ -49,7 +49,7 @@ import numpy as np
 from numpy import linalg
 from scipy.signal import firwin
 from warnings import warn
-from calc_kdp_ray_fir import calc_kdp_ray_fir
+from .calc_kdp_ray_fir import calc_kdp_ray_fir
 # import time
 
 VERSION = '1.6'
