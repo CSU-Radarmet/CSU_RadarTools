@@ -22,7 +22,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
 from .beta_functions import get_mbf_sets_summer
-from calc_kdp_ray_fir import hid_beta_f
+from .calc_kdp_ray_fir import hid_beta_f
 
 DEFAULT_WEIGHTS = {'DZ': 1.5, 'DR': 0.8, 'KD': 1.0, 'RH': 0.8, 'LD': 0.5,
                    'T': 0.4}
