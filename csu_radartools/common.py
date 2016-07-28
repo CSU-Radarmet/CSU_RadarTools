@@ -5,6 +5,7 @@ common sub-module of csu_radartools
 Contains commonly used functions.
 
 Nick Guy 10 May 2016
+Timothy Lang Rev1 (7/28/2016) - Moved functions from csu_blended_rain here.
 """
 import numpy as np
 
@@ -20,6 +21,57 @@ def _check_for_array(dz, zdr, kdp):
         kdp = np.array([kdp])
         zdr = np.array([zdr])
     return dz, zdr, kdp, len_flag
+
+
+################
+##  Rainfall  ##
+################
+
+
+def calc_rain_zr(dz, a=300.0, b=1.4):
+    """
+    dz = Reflectivity (dBZ), returns rainfall rate (mm h^-1)
+    Form Z = a * R**b
+    """
+    return (linearize(dz) / a)**(1.0 / b)
+
+
+def calc_rain_nexrad(dz, thresh_nexrad=53.0, a=300.0, b=1.4):
+    """
+    dz = Reflectivity (dBZ)
+    thresh_nexrad = Reflectivity cap for rain calc
+    a, b => Z = a * R**b
+    """
+    rr = calc_rain_zr(dz, a=a, b=b)
+    cond = dz > thresh_nexrad
+    rr[cond] = calc_rain_zr(thresh_nexrad, a=a, b=b)
+    return rr
+
+
+def calc_rain_kdp_zdr(kdp, zdr, a=90.8, b=0.93, c=-0.169):
+    """
+    kdp = Specific Differential Phase (deg km^-1)
+    zdr = Differential Reflectivity (dB)
+    a, b, c = Adjustable function parameters
+    """
+    return a * kdp**b * 10.0**(c * zdr)
+
+
+def calc_rain_z_zdr(dz, zdr, a=6.7e-3, b=0.927, c=-0.343):
+    """
+    dz = Reflectivity (dBZ)
+    zdr = Differential Reflectivity (dB)
+    a, b, c = Adjustable function parameters
+    """
+    return a * linearize(dz)**b * 10.0**(c * zdr)
+
+
+def calc_rain_kdp(kdp, a=40.5, b=0.85):
+    """
+    kdp = Specific Differential Phase (deg km^-1)
+    a, b = Adjustable coefficient, exponent
+    """
+    return a * kdp**b
 
 ########################
 ##  Unit Conversions  ##

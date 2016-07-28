@@ -13,6 +13,8 @@ Bringi et al. (2004; JTECH) - Alternate S-band retrieval
 Bringi et al. (2009; JTECH) - C-band retrieval
 Bringi et al. (2013; AMS Radar Conf) - S-band retrieval
 
+rev1 (07/28/2016) - Changed import location for _check_for_array
+
 #############
 """
 
@@ -21,7 +23,7 @@ from __future__ import division
 import numpy as np
 from warnings import warn
 from .csu_liquid_ice_mass import linearize
-from .csu_blended_rain import _check_for_array
+from .common import _check_for_array
 
 DEFAULT_MU = 3.0
 
