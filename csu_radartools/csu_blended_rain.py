@@ -17,60 +17,19 @@ rev4 05/10/2016 - Added ability for user to provide custom parameters to
                   polarimetric rainfall equations via the blended rainfall
                   routines. Also customized blended routines to handle
                   non-S bands. In this case, only R-Z and R-Kdp are used.
+rev5 07/28/2016 - Moved base rainfall functions to common, and also now import
+                  _check_for_array from common.
 """
 
 from __future__ import absolute_import
 from __future__ import division
 import numpy as np
 import warnings
-from .csu_liquid_ice_mass import (calc_zh_zv, calc_zdp,
-                                  linearize, get_linear_fits)
-
-
-def calc_rain_zr(dz, a=300.0, b=1.4):
-    """
-    dz = Reflectivity (dBZ), returns rainfall rate (mm h^-1)
-    Form Z = a * R**b
-    """
-    return (linearize(dz) / a)**(1.0 / b)
-
-
-def calc_rain_nexrad(dz, thresh_nexrad=53.0, a=300.0, b=1.4):
-    """
-    dz = Reflectivity (dBZ)
-    thresh_nexrad = Reflectivity cap for rain calc
-    a, b => Z = a * R**b
-    """
-    rr = calc_rain_zr(dz, a=a, b=b)
-    cond = dz > thresh_nexrad
-    rr[cond] = calc_rain_zr(thresh_nexrad, a=a, b=b)
-    return rr
-
-
-def calc_rain_kdp_zdr(kdp, zdr, a=90.8, b=0.93, c=-0.169):
-    """
-    kdp = Specific Differential Phase (deg km^-1)
-    zdr = Differential Reflectivity (dB)
-    a, b, c = Adjustable function parameters
-    """
-    return a * kdp**b * 10.0**(c * zdr)
-
-
-def calc_rain_z_zdr(dz, zdr, a=6.7e-3, b=0.927, c=-0.343):
-    """
-    dz = Reflectivity (dBZ)
-    zdr = Differential Reflectivity (dB)
-    a, b, c = Adjustable function parameters
-    """
-    return a * linearize(dz)**b * 10.0**(c * zdr)
-
-
-def calc_rain_kdp(kdp, a=40.5, b=0.85):
-    """
-    kdp = Specific Differential Phase (deg km^-1)
-    a, b = Adjustable coefficient, exponent
-    """
-    return a * kdp**b
+from .csu_liquid_ice_mass import (
+    calc_zh_zv, calc_zdp, linearize, get_linear_fits)
+from .common import (
+    _check_for_array, calc_rain_zr, calc_rain_nexrad, calc_rain_kdp_zdr,
+    calc_rain_z_zdr, calc_rain_kdp)
 
 
 def calc_blended_rain(
@@ -305,12 +264,3 @@ def csu_hidro_rain(
         return crr_hidzk[0], crr_meth[0]
     else:
         return crr_hidzk, crr_meth
-
-
-def _check_for_array(dz, zdr, kdp):
-    len_flag = hasattr(dz, '__len__')
-    if not len_flag:
-        dz = np.array([dz])
-        kdp = np.array([kdp])
-        zdr = np.array([zdr])
-    return dz, zdr, kdp, len_flag
