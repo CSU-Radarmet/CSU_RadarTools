@@ -10,8 +10,11 @@ Amendments by
 Timothy Lang (tjlangco@gmail.com)
 2/20/2015
 
-#Designed around tropical, oceanic equations found in Thompson et al. 2016, and designed
-# to work with the Powell and Houze 2015 rain typing (or simple convective / stratiform)
+Designed around tropical, oceanic equations found in Thompson et al. 2016, and
+designed to work with the Powell and Houze 2015 rain typing (or simple
+convective /stratiform)
+Brenda Dolan (bdolan@atmos.colostate.edu)
+8/2016
 
 """
 
@@ -28,16 +31,15 @@ from .common import (
 def calc_blended_rain_tropical(
         dz=None, zdr=None, kdp=None, cs=None, ice_flag=False,
         fhc=None,
-        predef='True',band='S',
+        predef='True', band='S',
         thresh_dz=38.0, thresh_zdr=0.25, thresh_kdp=0.3,
         thresh_frac_ice=0.1, thresh_nexrad=53.0,
-        r_z_a=216., r_z_b=1.39, 
-        r_z_a_c=126.,r_z_b_c=1.39,r_z_a_s=291.,r_z_b_s=1.55,
+        r_z_a=216., r_z_b=1.39,
+        r_z_a_c=126., r_z_b_c=1.39, r_z_a_s=291., r_z_b_s=1.55,
         r_kdp_a=59.5202, r_kdp_b=0.7451,
         r_z_zdr_a=0.0085, r_z_zdr_b=0.9237, r_z_zdr_c=-5.2389/10.,
         fit_a=None, fit_b=None, method='cr1995',
         r_kdp_zdr_a=96.5726, r_kdp_zdr_b=0.9315, r_kdp_zdr_c=-2.1140/10.):
-
 
     """
     This algorithm ingests polarimetric radar data and computes rain rate,
@@ -48,13 +50,17 @@ def calc_blended_rain_tropical(
     dz = Reflectivity
     zdr = Differential Reflectivity
     kdp = Specific Differential Phase
-    cs = Convective / Stratiform map (3=mixed / uncertain, 2=convective, 1= stratiform,
+    cs = Convective / Stratiform map (
+        3=mixed / uncertain,
+        2=convective,
+        1= stratiform,
         0=unknown)
     thresh_zdr = Threshold for zdr to use certain rain algorithms
     thresh_kdp = Threshold for kdp to use certain rain algorithms
 
-    Use the predef='True' if you want to use the coefficients defined in Thompson 2016.
-    Otherwise specifiy the coefficients for each relationship.
+    Use the predef='True' if you want to use the coefficients defined
+    in Thompson 2016. Otherwise specifiy the coefficients for each
+    relationship.
 
     Returns: rain rate, method, (Zdp, Fraction of Ice)
     method = 1: R(Kdp, Zdr)
@@ -83,14 +89,13 @@ def calc_blended_rain_tropical(
             kdp = np.array([kdp])
             zdr = np.array([zdr])
 
-
     """
     NOTE: The T15 equations are defined as:
         R = a*Kdp*zeta_dr**c and R=a*Zh*zeta_dr**c
         where as the algorithm expects it in the form
         R = a*Kdp*10.**(Zdr*c)  R=a*Zh*10.**(Zdr*c)
-        
-        These just differ in the by 1/10. in the exponent of Zdr, so be sure to 
+
+        These just differ in the by 1/10. in the exponent of Zdr, so be sure to
         divide by 10. when sending to the algorithm.
     """
     if predef == 'True':
@@ -98,61 +103,60 @@ def calc_blended_rain_tropical(
         NOTE: The coefficients are defined as:
         Z=aR**b
         """
-        #Convective R-Z
-        r_z_a_c=126.
-        r_z_b_c=1.39
-        #Stratiform R-Z
-        r_z_a_s=291.
-        r_z_b_s=1.55
-        #All R-Z
-        r_z_a=216
-        r_z_b=1.39
+        # Convective R-Z
+        r_z_a_c = 126.
+        r_z_b_c = 1.39
+        # Stratiform R-Z
+        r_z_a_s = 291.
+        r_z_b_s = 1.55
+        # All R-Z
+        r_z_a = 216
+        r_z_b = 1.39
 
         if band == 'S':
-        #R = a*Kdp*zeta**c
-            r_kdp_zdr_a=96.5726,
-            r_kdp_zdr_b=0.9315,
-            r_kdp_zdr_c=-2.1140/10.,
+            # R = a*Kdp*zeta**c
+            r_kdp_zdr_a = 96.5726,
+            r_kdp_zdr_b = 0.9315,
+            r_kdp_zdr_c = -2.1140/10.,
 
-        #R = a*Zh*zeta**c
+            # R = a*Zh*zeta**c
             r_z_zdr_a = 0.0085
             r_z_zdr_b = 0.9237
             r_z_zdr_c = -5.2389/10.
 
-        #R = a*Kdp**b
+            # R = a*Kdp**b
             r_kdp_a = 59.5202
             r_kdp_b = 0.7451
 
         if band == 'C':
-        #R = a*Kdp*zeta**c
+            # R = a*Kdp*zeta**c
             r_kdp_zdr_a = 45.6976
             r_kdp_zdr_b = 0.8763
             r_kdp_zdr_c = -1.6718/10.
 
-        #R = a*Zh*zeta**c
+            # R = a*Zh*zeta**c
             r_z_zdr_a = 0.0086
             r_z_zdr_b = 0.9088
             r_z_zdr_c = -4.2059/10.
 
-        #R = a*Kdp**b
+            # R = a*Kdp**b
             r_kdp_a = 34.5703
             r_kdp_b = 0.7331
 
         if band == 'X':
-        #R = a*Kdp*zeta**c
+            # R = a*Kdp*zeta**c
             r_kdp_zdr_a = 28.1289
             r_kdp_zdr_b = 0.9194
             r_kdp_zdr_c = -1.6876/10.
 
-        #R = a*Zh*zeta**c
+            # R = a*Zh*zeta**c
             r_z_zdr_a = 0.0085
             r_z_zdr_b = 0.9294
             r_z_zdr_c = -4.4580/10.
 
-        #R = a*Kdp**b
+            # R = a*Kdp**b
             r_kdp_a = 21.9729
             r_kdp_b = 0.7221
-
 
     if fhc is None:
         warnings.warn('No FHC ... Rain may be calculated above melting layer')
@@ -220,5 +224,3 @@ def calc_blended_rain_tropical(
 
         # Return based on what the user provided and what they wanted
         return r_blended, meth
-
-
