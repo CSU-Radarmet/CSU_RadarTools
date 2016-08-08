@@ -30,7 +30,7 @@ from .csu_liquid_ice_mass import (
 from .common import (
     _check_for_array, calc_rain_zr, calc_rain_nexrad, calc_rain_kdp_zdr,
     calc_rain_z_zdr, calc_rain_kdp)
-
+from .csu_blended_rain_tropical import calc_blended_rain_tropical
 
 def calc_blended_rain(
         dz=None, zdr=None, kdp=None, ice_flag=False, band='S',
