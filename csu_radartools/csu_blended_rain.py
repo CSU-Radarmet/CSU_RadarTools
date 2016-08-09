@@ -32,6 +32,7 @@ from .common import (
     calc_rain_z_zdr, calc_rain_kdp)
 from .csu_blended_rain_tropical import calc_blended_rain_tropical
 
+
 def calc_blended_rain(
         dz=None, zdr=None, kdp=None, ice_flag=False, band='S',
         thresh_dz=38.0, thresh_zdr=0.5, thresh_kdp=0.3,

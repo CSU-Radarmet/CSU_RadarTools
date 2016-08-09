@@ -10,7 +10,7 @@ Timothy Lang Rev1 (7/28/2016) - Moved functions from csu_blended_rain here.
 import numpy as np
 
 ##############
-##  Arrays  ##
+#  Arrays  ###
 ##############
 
 
@@ -24,7 +24,7 @@ def _check_for_array(dz, zdr, kdp):
 
 
 ################
-##  Rainfall  ##
+#  Rainfall  ###
 ################
 
 
@@ -74,7 +74,7 @@ def calc_rain_kdp(kdp, a=40.5, b=0.85):
     return a * kdp**b
 
 ########################
-##  Unit Conversions  ##
+#  Unit Conversions  ###
 ########################
 
 
