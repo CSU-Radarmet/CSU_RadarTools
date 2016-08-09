@@ -161,66 +161,63 @@ def calc_blended_rain_tropical(
     if fhc is None:
         warnings.warn('No FHC ... Rain may be calculated above melting layer')
 
-        r_blended = np.zeros_like(dz)
-        r_blended[...] = -9999.
-        meth = np.int16(np.zeros_like(dz))
-        meth[...] = -1
+    r_blended = np.zeros_like(dz)
+    # r_blended[...] = -9999.
+    meth = np.int16(np.zeros_like(dz)) - 1
 
-        # convective ZR estimate
-        r_dz_conv = calc_rain_zr(dz, a=r_z_a_c, b=r_z_b_c)
-        # stratiform ZR estimate
-        r_dz_strat = calc_rain_zr(dz, a=r_z_a_s, b=r_z_b_s)
-        # ALL ZR estimate
-        r_dz_all = calc_rain_zr(dz, a=r_z_a, b=r_z_b)
+    # convective ZR estimate
+    r_dz_conv = calc_rain_zr(dz, a=r_z_a_c, b=r_z_b_c)
+    # stratiform ZR estimate
+    r_dz_strat = calc_rain_zr(dz, a=r_z_a_s, b=r_z_b_s)
+    # ALL ZR estimate
+    r_dz_all = calc_rain_zr(dz, a=r_z_a, b=r_z_b)
 
-        # Polarimetric estimates
-        r_kdp_zdr = calc_rain_kdp_zdr(kdp, zdr, a=r_kdp_zdr_a,
-                                      b=r_kdp_zdr_b, c=r_kdp_zdr_c)
-        r_dz_zdr = calc_rain_z_zdr(dz, zdr, a=r_z_zdr_a,
-                                   b=r_z_zdr_b, c=r_z_zdr_c)
-        r_kdp = calc_rain_kdp(kdp, a=r_kdp_a, b=r_kdp_b)
+    # Polarimetric estimates
+    r_kdp_zdr = calc_rain_kdp_zdr(kdp, zdr, a=r_kdp_zdr_a,
+                                  b=r_kdp_zdr_b, c=r_kdp_zdr_c)
+    r_dz_zdr = calc_rain_z_zdr(dz, zdr, a=r_z_zdr_a,
+                               b=r_z_zdr_b, c=r_z_zdr_c)
+    r_kdp = calc_rain_kdp(kdp, a=r_kdp_a, b=r_kdp_b)
 
-        # Conditions
-        cond_kdp = kdp >= thresh_kdp
-        cond_zdr = zdr >= thresh_zdr
-        # Set of method choices
-        cond_meth_1 = np.logical_and(cond_kdp, cond_zdr)
-        cond_meth_2 = np.logical_and(cond_kdp, ~cond_zdr)
-        cond_meth_3 = np.logical_and(cond_zdr, ~cond_kdp)
-        cond_meth_4 = np.logical_and(~cond_kdp, ~cond_zdr)
+    # Conditions
+    cond_kdp = kdp >= thresh_kdp
+    cond_zdr = zdr >= thresh_zdr
+    # Set of method choices
+    cond_meth_1 = np.logical_and(cond_kdp, cond_zdr)
+    cond_meth_2 = np.logical_and(cond_kdp, ~cond_zdr)
+    cond_meth_3 = np.logical_and(cond_zdr, ~cond_kdp)
+    cond_meth_4 = np.logical_and(~cond_kdp, ~cond_zdr)
 
-        if cs is None:
-            meth[cond_meth_4] = 4
-            r_blended[cond_meth_4] = r_dz_all[cond_meth_4]
-        else:
-            cond_meth_4c = np.logical_and(cond_meth_4, cs == 2)
-            cond_meth_4s = np.logical_and(cond_meth_4, cs == 1)
-            cond_meth_4a = np.logical_and(cond_meth_4, cs == 3)
+    if cs is None:
+        meth[cond_meth_4] = 4
+        r_blended[cond_meth_4] = r_dz_all[cond_meth_4]
+    else:
+        cond_meth_4c = np.logical_and(cond_meth_4, cs == 2)
+        cond_meth_4s = np.logical_and(cond_meth_4, cs == 1)
+        cond_meth_4a = np.logical_and(cond_meth_4, cs == 3)
+        meth[cond_meth_4c] = 5
+        meth[cond_meth_4s] = 6
+        meth[cond_meth_4a] = 4
+        r_blended[cond_meth_4c] = r_dz_conv[cond_meth_4c]
+        r_blended[cond_meth_4s] = r_dz_strat[cond_meth_4s]
+        r_blended[cond_meth_4a] = r_dz_all[cond_meth_4a]
 
-            meth[cond_meth_4c] = 5
-            meth[cond_meth_4s] = 6
-            meth[cond_meth_4a] = 4
+    # Assign methods
+    meth[cond_meth_1] = 1
+    meth[cond_meth_2] = 2
+    meth[cond_meth_3] = 3
+    # Assign rain rates based on methods
+    r_blended[cond_meth_1] = r_kdp_zdr[cond_meth_1]
+    r_blended[cond_meth_2] = r_kdp[cond_meth_2]
+    r_blended[cond_meth_3] = r_dz_zdr[cond_meth_3]
 
-            r_blended[cond_meth_4c] = r_dz_conv[cond_meth_4c]
-            r_blended[cond_meth_4s] = r_dz_strat[cond_meth_4s]
-            r_blended[cond_meth_4a] = r_dz_all[cond_meth_4a]
+    if fhc is not None:
+        cond_ice = np.logical_and(fhc > 2, fhc < 10)
+        r_blended[cond_ice] = 0.0
+        meth[cond_ice] = -1
 
-        # Assign methods
-        meth[cond_meth_1] = 1
-        meth[cond_meth_2] = 2
-        meth[cond_meth_3] = 3
-        # Assign rain rates based on methods
-        r_blended[cond_meth_1] = r_kdp_zdr[cond_meth_1]
-        r_blended[cond_meth_2] = r_kdp[cond_meth_2]
-        r_blended[cond_meth_3] = r_dz_zdr[cond_meth_3]
+    r_blended[dz < -10] = 0.0
+    meth[dz < -10] = -1
 
-        if fhc is not None:
-            cond_ice = np.loglcal_or(fhc > 2, fhc < 10)
-            r_blended[cond_ice] = -9999.
-            meth[cond_ice] = -1
-
-        r_blended[dz < -10] = -9999.
-        meth[dz < -10] = -1
-
-        # Return based on what the user provided and what they wanted
-        return r_blended, meth
+    # Return based on what the user provided and what they wanted
+    return r_blended, meth
