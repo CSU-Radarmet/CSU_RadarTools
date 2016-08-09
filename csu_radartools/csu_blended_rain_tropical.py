@@ -162,7 +162,7 @@ def calc_blended_rain_tropical(
         warnings.warn('No FHC ... Rain may be calculated above melting layer')
 
         r_blended = np.zeros_like(dz)
-        r_blended[...] = -9999.
+        r_blended[...] = 0.0
         meth = np.int16(np.zeros_like(dz))
         meth[...] = -1
 
@@ -189,38 +189,40 @@ def calc_blended_rain_tropical(
         cond_meth_3 = np.logical_and(cond_zdr, ~cond_kdp)
         cond_meth_4 = np.logical_and(~cond_kdp, ~cond_zdr)
 
-        if cs is None:
-            meth[cond_meth_4] = 4
-            r_blended[cond_meth_4] = r_dz_all[cond_meth_4]
-        else:
-            cond_meth_4c = np.logical_and(cond_meth_4, cs == 2)
-            cond_meth_4s = np.logical_and(cond_meth_4, cs == 1)
-            cond_meth_4a = np.logical_and(cond_meth_4, cs == 3)
+    if cs is None:
+        meth[cond_meth_4] = 4
+        r_blended[cond_meth_4] = r_dz_all[cond_meth_4]
+    else:
+        cond_meth_4c = np.logical_and(cond_meth_4, cs == 2)
+        cond_meth_4s = np.logical_and(cond_meth_4, cs == 1)
+        cond_meth_4a = np.logical_and(cond_meth_4, cs == 3)
 
-            meth[cond_meth_4c] = 5
-            meth[cond_meth_4s] = 6
-            meth[cond_meth_4a] = 4
+        meth[cond_meth_4c] = 5
+        meth[cond_meth_4s] = 6
+        meth[cond_meth_4a] = 4
 
-            r_blended[cond_meth_4c] = r_dz_conv[cond_meth_4c]
-            r_blended[cond_meth_4s] = r_dz_strat[cond_meth_4s]
-            r_blended[cond_meth_4a] = r_dz_all[cond_meth_4a]
+        r_blended[cond_meth_4c] = r_dz_conv[cond_meth_4c]
+        r_blended[cond_meth_4s] = r_dz_strat[cond_meth_4s]
+        r_blended[cond_meth_4a] = r_dz_all[cond_meth_4a]
 
-        # Assign methods
-        meth[cond_meth_1] = 1
-        meth[cond_meth_2] = 2
-        meth[cond_meth_3] = 3
-        # Assign rain rates based on methods
-        r_blended[cond_meth_1] = r_kdp_zdr[cond_meth_1]
-        r_blended[cond_meth_2] = r_kdp[cond_meth_2]
-        r_blended[cond_meth_3] = r_dz_zdr[cond_meth_3]
+    # Assign methods
+    meth[cond_meth_1] = 1
+    meth[cond_meth_2] = 2
+    meth[cond_meth_3] = 3
+    # Assign rain rates based on methods
+    r_blended[cond_meth_1] = r_kdp_zdr[cond_meth_1]
+    r_blended[cond_meth_2] = r_kdp[cond_meth_2]
+    r_blended[cond_meth_3] = r_dz_zdr[cond_meth_3]
 
-        if fhc is not None:
-            cond_ice = np.loglcal_or(fhc > 2, fhc < 10)
-            r_blended[cond_ice] = -9999.
-            meth[cond_ice] = -1
+    if fhc is not None:
+        cond_ice = np.loglcal_or(fhc > 2, fhc < 10)
+        r_blended[cond_ice] = 0.0
+        cond_hail = np.logical_and(fhc == 9,cond_kdp)
+        r_blended[cond_hail] = r_kdp
+        meth[cond_ice] = -1
 
-        r_blended[dz < -10] = -9999.
-        meth[dz < -10] = -1
+    r_blended[dz < -10] = 0.0
+    meth[dz < -10] = -1
 
-        # Return based on what the user provided and what they wanted
-        return r_blended, meth
+    # Return based on what the user provided and what they wanted
+    return r_blended, meth
