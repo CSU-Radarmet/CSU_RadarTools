@@ -217,7 +217,7 @@ def calc_blended_rain_tropical(
         meth[cond_ice] = -1
         cond_hail = np.logical_and(fhc == 9, cond_kdp)
         r_blended[cond_hail] = r_kdp[cond_hail]
-        r_meth[cond_ice] = 2
+        meth[cond_ice] = 2
 
     r_blended[dz < -10] = 0.0
     meth[dz < -10] = -1
