@@ -16,6 +16,9 @@ convective /stratiform)
 Brenda Dolan (bdolan@atmos.colostate.edu)
 8/2016
 
+Added the dBZ + Kdp threshold back in to eliminate small reflectivities with non-zero Kdp
+blowing up the rain rates.
+11/2016
 """
 
 from __future__ import absolute_import
@@ -181,12 +184,14 @@ def calc_blended_rain_tropical(
 
     # Conditions
     cond_kdp = kdp >= thresh_kdp
+    cond_dbz = dz >= thresh_dz
+    cond_kdpz = np.logical_and(cond_kdp,cond_dbz)
     cond_zdr = zdr >= thresh_zdr
     # Set of method choices
-    cond_meth_1 = np.logical_and(cond_kdp, cond_zdr)
-    cond_meth_2 = np.logical_and(cond_kdp, ~cond_zdr)
-    cond_meth_3 = np.logical_and(cond_zdr, ~cond_kdp)
-    cond_meth_4 = np.logical_and(~cond_kdp, ~cond_zdr)
+    cond_meth_1 = np.logical_and(cond_kdpz, cond_zdr)
+    cond_meth_2 = np.logical_and(cond_kdpz, ~cond_zdr)
+    cond_meth_3 = np.logical_and(cond_zdr, ~cond_kdpz)
+    cond_meth_4 = np.logical_and(~cond_kdpz, ~cond_zdr)
 
     if cs is None:
         meth[cond_meth_4] = 4
@@ -215,9 +220,9 @@ def calc_blended_rain_tropical(
         cond_ice = np.logical_and(fhc > 2, fhc < 10)
         r_blended[cond_ice] = 0.0
         meth[cond_ice] = -1
-        cond_hail = np.logical_and(fhc == 9, cond_kdp)
+        cond_hail = np.logical_and(fhc == 9, cond_kdpz)
         r_blended[cond_hail] = r_kdp[cond_hail]
-        r_meth[cond_ice] = 2
+        meth[cond_ice] = 2
 
     r_blended[dz < -10] = 0.0
     meth[dz < -10] = -1
