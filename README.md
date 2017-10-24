@@ -43,3 +43,6 @@ from csu_radartools import (csu_fhc, csu_liquid_ice_mass, csu_blended_rain, csu_
 For help information do help on individual modules. There is also a demonstration IPython notebook in the notebooks directory that covers all the modules.
 
 CSU_RadarTools is known to work under Python 2.7 and 3.4. Other Python versions are untested.
+
+Latest release of CSU_RadarTools (v1.2):
+[![DOI](https://zenodo.org/badge/31606116.svg)](https://zenodo.org/badge/latestdoi/31606116)
