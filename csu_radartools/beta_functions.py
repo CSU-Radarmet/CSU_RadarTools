@@ -238,6 +238,3 @@ def get_mbf_sets_summer(use_temp=True, plot_flag=False, n_types=10,
     return mbf_sets
 
 ################################
-
-if __name__ == '__main__':
-    a = cdf_betas_sum(plot_flag=True, use_temp=True, temp_factor=2, band='C')
