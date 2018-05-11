@@ -26,7 +26,7 @@ PACKAGES = ['csu_radartools']
 
 if USE_CYTHON:
     ext = '.pyx'
-    extensions = [Extension(PACKAGES[0]+'/calc_kdp_ray_fir',
+    extensions = [Extension(PACKAGES[0]+'.calc_kdp_ray_fir',
                   [PACKAGES[0]+'/calc_kdp_ray_fir'+ext])]
 else:
     ext = '.f'
