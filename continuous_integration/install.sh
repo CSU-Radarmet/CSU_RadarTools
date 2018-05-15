@@ -22,36 +22,21 @@ chmod +x miniconda.sh
 ./miniconda.sh -b
 export PATH=/home/travis/miniconda2/bin:/home/travis/miniconda/bin:$PATH
 conda update --yes conda
-conda update --yes conda
 
 # Create a testenv with the correct Python version
 conda create -n testenv --yes pip python=$PYTHON_VERSION
 source activate testenv
 
 # Install dependencies
-conda install --yes numpy scipy matplotlib netcdf4 nose numpydoc hdf4=4.2.12 
-pip install sphinx-gallery skewt
+conda install --yes cython basemap numpy scipy matplotlib netcdf4 nose hdf4=4.2.12 
+pip install skewt f2py
 conda install --yes -c conda-forge arm_pyart
-conda install --yes basemap
 
 
 
-pip install git+https://github.com/jleinonen/pytmatrix.git
-if [[ $PYTHON_VERSION == '2.7' ]]; then
-    conda install --yes sphinx numpydoc hdf4=4.2.12
-    conda install --yes sphinx_rtd_theme
-    pip install xmltodict
-fi
-if [[ $PYTHON_VERSION == '3.4' ]]; then
-    conda install --yes hdf4=4.2.12
-fi
-if [[ $PYTHON_VERSION == '3.5' ]]; then
-    conda install --yes hdf4=4.2.12
-fi
-if [[ $PYTHON_VERSION == '3.6' ]]; then
-    conda install --yes hdf4=4.2.12
-fi
-
+#if [[ $PYTHON_VERSION == '2.7' ]]; then
+#    pip install xmltodict
+#fi
 
 # install coverage modules
 pip install nose-cov
