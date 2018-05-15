@@ -31,8 +31,8 @@ source activate testenv
 # Install dependencies
 conda install --yes numpy scipy matplotlib netcdf4 nose numpydoc hdf4=4.2.12 
 pip install sphinx-gallery skewt
-conda install -c conda-forge arm_pyart
-conda install basemap
+conda install --yes -c conda-forge arm_pyart
+conda install --yes basemap
 
 
 
