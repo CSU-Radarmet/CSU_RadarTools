@@ -44,5 +44,4 @@ if [[ "$COVERALLS" == "true" ]]; then
     pip install python-coveralls
 fi
 python setup.py build_ext --inplace
-
-pip install .
+pip install -e .
