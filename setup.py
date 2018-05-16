@@ -31,7 +31,7 @@ if USE_CYTHON:
                   [PACKAGES[0]+'/calc_kdp_ray_fir'+ext])]
 else:
     ext = '.f'
-    extensions = [Extension('calc_kdp_ray_fir',
+    extensions = [Extension(PACKAGES[0] + '.calc_kdp_ray_fir',
                   [PACKAGES[0]+'/calc_kdp_ray_fir'+ext])]
 
 if USE_CYTHON:
