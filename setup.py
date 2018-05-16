@@ -2,12 +2,17 @@
 CSU_RadarTools
 """
 
+
 import os
 import sys
 import numpy
 
 # Set to False to use f2py instead of Cython for csu_kdp, etc.
-USE_CYTHON = True
+if os.environ.get('USE_CYTHON', False):
+    USE_CYTHON = True
+else:
+    USE_CYTHON=False
+
 
 if USE_CYTHON:
     from distutils.core import setup
@@ -30,7 +35,7 @@ if USE_CYTHON:
                   [PACKAGES[0]+'/calc_kdp_ray_fir'+ext])]
 else:
     ext = '.f'
-    extensions = [Extension('calc_kdp_ray_fir',
+    extensions = [Extension(PACKAGES[0] + '.calc_kdp_ray_fir',
                   [PACKAGES[0]+'/calc_kdp_ray_fir'+ext])]
 
 if USE_CYTHON:
@@ -64,5 +69,5 @@ setup(
               csu_blended_rain, fundamentals)
           """,
       ext_modules = extensions,
-      include_dirs = [numpy.get_include()]
+      include_dirs = [numpy.get_include(), '.']
       )
