@@ -24,7 +24,7 @@ export PATH=/home/travis/miniconda2/bin:/home/travis/miniconda/bin:$PATH
 conda update --yes conda
 
 # Create a testenv with the correct Python version
-conda create -n testenv --yes pip python=$PYTHON_VERSION
+conda create -n testenv --yes pip python=$TRAVIS_PYTHON_VERSION
 source activate testenv
 
 # Install dependencies

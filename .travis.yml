@@ -1,26 +1,24 @@
 sudo: false
 env:
+  matrix:
+  - USE_CYTHON=true
+  - USE_CYTHON=false
   global:
   - LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgfortran.so.3
+
+python:
+    - "2.7"
+    - "3.4"
+    - "3.5"
+    - "3.6"
+
 addons:
   apt:
     packages:
     - gfortran
+
 language: python
-matrix:
-  include:
-  - python: '2.7'
-    env:
-    - PYTHON_VERSION="2.7"
-  - python: '3.4'
-    env:
-    - PYTHON_VERSION="3.4"
-  - python: '3.5'
-    env:
-    - PYTHON_VERSION="3.5"
-  - python: '3.6'
-    env:
-    - PYTHON_VERSION="3.6"
+
 before_install:
 - pip install pytest 
 install: source continuous_integration/install.sh
