@@ -39,9 +39,6 @@ conda install --yes -c conda-forge arm_pyart
 #fi
 
 # install coverage modules
-pip install nose-cov
-if [[ "$COVERALLS" == "true" ]]; then
-    pip install python-coveralls
-fi
+
 python setup.py -v build_ext --inplace
 pip install -v -e .
