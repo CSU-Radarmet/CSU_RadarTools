@@ -40,5 +40,4 @@ conda install --yes -c conda-forge arm_pyart
 
 # install coverage modules
 
-python setup.py -v build_ext --inplace
 pip install -v -e .

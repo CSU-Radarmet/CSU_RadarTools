@@ -22,11 +22,7 @@ matrix:
     env:
     - PYTHON_VERSION="3.6"
 before_install:
-- pip install pytest pytest-cov
+- pip install pytest 
 install: source continuous_integration/install.sh
 #script: eval xvfb-run pytest .
-script: pytest 
-after_success:
-    #- coveralls
-- if [[ "$DOC_BUILD" == "true" ]]; then cd $TRAVIS_BUILD_DIR; source continuous_integration/build_docs.sh;
-  fi
+script: python -m pytest  tests/
