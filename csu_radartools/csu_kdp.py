@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Timothy James Lang
 tjlangco@gmail.com
