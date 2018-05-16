@@ -8,7 +8,7 @@ import sys
 import numpy
 
 # Set to False to use f2py instead of Cython for csu_kdp, etc.
-USE_CYTHON = False
+USE_CYTHON = True
 
 if USE_CYTHON:
     from distutils.core import setup
