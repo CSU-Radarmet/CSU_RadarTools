@@ -43,5 +43,5 @@ pip install nose-cov
 if [[ "$COVERALLS" == "true" ]]; then
     pip install python-coveralls
 fi
-python setup.py build_ext --inplace
-pip install -e .
+python setup.py -v build_ext --inplace
+pip install -v -e .
