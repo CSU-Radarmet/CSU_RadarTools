@@ -39,7 +39,7 @@ def melting_layer(dz=None,zdr=None,ldr=None,kdp=None,rho=None,sn=None,heights=No
     
 #Now this works a lot better if the SNR is included.
     if sn is not None:
-        print('QCing using SN<',sn_thresh)
+        print('QCing using SN<',sn_thresh,' to remove edge WS classifications')
         fh[sn<sn_thresh] = 0
     else:
         if verbose==True:
@@ -62,9 +62,11 @@ def melting_layer(dz=None,zdr=None,ldr=None,kdp=None,rho=None,sn=None,heights=No
     if scan_type == 'rhi':
         print('scan type is RHI')
         meltlev,mean_melt = get_ml_rhi(fh,dz,heights,expected_ML,verbose=verbose)
+        print('RADAR MELTING IS: ',mean_melt)
     else:
         print('scan type is PPI')
         meltlev,mean_melt = get_ml_ppi(fh,dz,heights,expected_ML,azimuths=azimuths,nsect=nsect,verbose=verbose)
+        print('RADAR MELTING IS: ',np.mean(mean_melt))
     #Lastly, return the HID returned from the WS / other
 #     fh[meltlev==0] = 0
 #     fh[meltlev==2] = 0

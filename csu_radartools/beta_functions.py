@@ -230,7 +230,7 @@ def get_mbf_sets_winterML(use_temp=False, plot_flag=False, n_types=2,
     mbf_sets = Membership beta function sets
     """
 
-    me = '-->get_mbf_sets_winter  '
+    me = '-->get_mbf_sets_melting '
     if verbose:
         print(me + ' 2 Category ML %s-band HID' % band)
 

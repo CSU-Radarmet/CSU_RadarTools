@@ -76,8 +76,8 @@ def csu_fhc_winter(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
     radar_data, fhc_vars, shp, sz = \
         _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose)
 
-    print('dz',np.shape(dz))
-    print('radar_data',np.shape(radar_data['DZ']),shp)
+    #print('dz',np.shape(dz))
+    #print('radar_data',np.shape(radar_data['DZ']),shp)
 
     # Now grab the membership beta function parameters
     mbf_sets = get_mbf_sets_winter(
@@ -119,10 +119,10 @@ def csu_fhc_winter(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
     mu = np.array(test_list)
     shp = np.concatenate([[ntp], shp])
     if verbose:
-        print(mu.shape)
+        #print(mu.shape)
         print('mu max: ', mu.max())
     # return mu but make sure the shape is an int array
-    print('shape',shp,np.shape(shp))
+    #print('shape',shp,np.shape(shp))
     return mu.reshape(shp.astype(np.int32))
 
 ##########################
@@ -179,7 +179,7 @@ def _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose):
             fhc_vars[key] = 0
     if verbose:
         print('USING VARIABLES: ', fhc_vars)
-        print('shape in pop var',shp, sz)
+        #print('shape in pop var',shp, sz)
     return radar_data, fhc_vars, shp, sz
 
 
@@ -270,11 +270,11 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
                     test = hid_beta_f(sz, radar_data['DZ'], sets['DZ']['a'][c],
                                       sets['DZ']['b'][c], sets['DZ']['m'][c])
         elif 'linear' in method:  # Just a giant weighted sum
-            print('Using linear',c)
+            #print('Using linear',c)
             if pol_flag:
-                print(c,sz,np.shape(weight_sum),'in linear')
+                #print(c,sz,np.shape(weight_sum),'in linear')
                 test = _calculate_test(fhc_vars, weights, radar_data, sets,
                                        varlist, weight_sum, c, sz)
-                print(np.shape(test),'test')
+                #print(np.shape(test),'test')
         test_list.append(test)
     return test_list

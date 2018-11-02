@@ -114,9 +114,9 @@ def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
     # Finish up
     mu = np.array(test_list)
     shp = np.concatenate([[n_types], shp])
-    print('mu',mu.shape,'sz',sz,'shp',shp)
+    #print('mu',mu.shape,'sz',sz,'shp',shp)
     if verbose:
-        print(mu.shape)
+        #print(mu.shape)
         print('mu max: ', mu.max())
     # return mu but make sure the shape is an int array
     return mu.reshape(shp.astype(np.int32))
