@@ -77,10 +77,18 @@ def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None,sn=None,T=None,us
     whmelt = np.where(fh == 5)
     winter_hca[whmelt] = 5
     winter_hca[fh == 0] = -1
+
+    
+#     Filter out where there is no pol data.
+#     rhfill = rho.filled(fill_value = np.nan)
+#     whbad = np.where(np.isnan(rhfill))
+#     winter_hca[whbad] = -1    
+
+
 #     
     if return_scores == True:
         scores = {'ML':scores_ML,'warm':scores_warm,'cold':scores_cold}
         hca = {'ML':fh,'warm':fhwarm,'cold':fhcold}
-        return winter_hca,scores,hca,meltlev
+        return winter_hca,scores,hca
     else:
         return winter_hca
