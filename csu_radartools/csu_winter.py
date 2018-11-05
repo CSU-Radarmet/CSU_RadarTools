@@ -39,12 +39,12 @@ from csu_fhc_winter import csu_fhc_winter
 
 def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None,sn=None,T=None,use_temp=False, band='S',method='linear',
                         sn_thresh=5,expected_ML=4.0,nsect=36,return_scores=False,azimuths=None,
-                        verbose=True,scan_type = 'ppi',heights=None, fdir='/Users/bdolan/scratch/WINTER_HCA/beta_function_parameters/'):
+                        verbose=True,minRH=0.5,scan_type = 'ppi',heights=None, fdir='/Users/bdolan/scratch/WINTER_HCA/beta_function_parameters/'):
 
 #The first step is to find the wet snow and the melting layer.
 
     meltlev,melt_z,fh,scores_ML = melting_layer(dz=dz,zdr=zdr,kdp=kdp,rho=rho,sn=sn,heights=heights,scan_type = scan_type,verbose=verbose,
-        band=band, fdir=fdir,azimuths=azimuths,sn_thresh=sn_thresh,nsect=36)
+        band=band, fdir=fdir,azimuths=azimuths,expected_ML=expected_ML,minRH=minRH,sn_thresh=sn_thresh,nsect=36)
     
 #Step 2 is to run the warm layer HID. using csu_fhc_winter and warm == True
 
@@ -74,8 +74,10 @@ def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None,sn=None,T=None,us
     #Now combine them using the melting level idea.
     winter_hca[meltlev==0] = fhwarm[meltlev==0]
     winter_hca[meltlev==2] = fhcold[meltlev==2]
+    #whbad = np.where(fh == -1)
     whmelt = np.where(fh == 5)
     winter_hca[whmelt] = 5
+    winter_hca[fh==-1 ] = -1
     winter_hca[fh == 0] = -1
 
     
