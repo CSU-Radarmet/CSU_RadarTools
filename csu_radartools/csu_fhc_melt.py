@@ -102,16 +102,44 @@ def get_ml_rhi(fh,dz,height,expected_ML,verbose=False):
 ###### you are going to have some error messages if it doesn't find a melting layer - it needs an array to do these statistics
 # this algorithm is designed for stratiform precipitation, so if it doesn't have a ML you really should be using a different algorithm
 # because there are no convective precip categories like graupel, hail, etc.
-    distfreq,eg = np.histogram(ML_z)
-    maxfreq=np.max(distfreq)
-    ML_mode,ML_count = stats.mode(ML_z)
-    ML_sdevZ = np.std(ML_z)
-    ML_medianZ = np.median(ML_z)
-    ML_varZ = np.var(ML_z)
-    ML_skewZ = stats.skew(ML_z)
-    ML_kurtZ = stats.kurtosis(ML_z)
-    ML_80Z = np.percentile(ML_z,80)
-    ML_20Z = np.percentile(ML_z,20)
+    if len(ML_z) > 10:
+        distfreq,eg = np.histogram(ML_z)
+        maxfreq=np.max(distfreq)
+        ML_mode,ML_count = stats.mode(ML_z)
+        ML_sdevZ = np.std(ML_z)
+        ML_medianZ = np.median(ML_z)
+        ML_varZ = np.var(ML_z)
+        ML_skewZ = stats.skew(ML_z)
+        ML_kurtZ = stats.kurtosis(ML_z)
+        try:
+            ML_80Z = np.percentile(ML_z,80)
+        except:
+            if verbose == True:
+                print('Not enough points for 80 percent')
+            else:
+                pass
+        try:
+            ML_20Z = np.percentile(ML_z,20)
+        except:
+            if verbose == True:
+                print('Not enough points for 20 percent')
+            else:
+                pass
+        if verbose == True:
+            print("ML Stats:")
+            print("mode: {m:.2f}".format(m=ML_mode[0]))
+            print("Median:{o:.2f}".format(o=ML_medianZ))
+            print("SDEV: {s:.2f}".format(s=ML_sdevZ))
+            print("Var: {v:.2f}".format(v=ML_varZ))
+            print("Kurt: {k:.2f}".format(k=ML_kurtZ))
+            print("Skew: {w:.2f}".format(w=ML_skewZ))
+            print("80per: {e:.2f}".format(e=ML_80Z))
+            print("20per: {t:.2f}".format(t=ML_20Z))
+        else:
+            print("Melting level height:{m:.2f}".format(m=ML_medianZ))
+    else:
+        print("not enough points for ML detection. Using expected: {m}".format(m=expected_ML))
+        ML_medianZ = expected_ML
     
     meltlev = np.zeros_like(fh)+1
     
