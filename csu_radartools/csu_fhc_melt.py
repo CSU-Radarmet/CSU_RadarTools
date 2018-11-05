@@ -29,7 +29,7 @@ from csu_fhc_ml1 import csu_fhc_cold_newml1
 
 
 def melting_layer(dz=None,zdr=None,ldr=None,kdp=None,rho=None,sn=None,heights=None,scan_type = 'ppi',
-                verbose=False,plot_flag=False,band='S',fdir='./',expected_ML=None,nsect=36,sn_thresh=5,azimuths=None):
+                verbose=False,plot_flag=False,band='S',fdir='./',minRH = 0.5,expected_ML=None,nsect=36,sn_thresh=5,azimuths=None):
             
 #The first step ist to run a FHC that determines 'wet snow' from 'other'
     scores = csu_fhc_cold_newml1(dz=dz, zdr=zdr, rho=rho, kdp=kdp, use_temp=False, band='S',method='linear',
@@ -45,10 +45,13 @@ def melting_layer(dz=None,zdr=None,ldr=None,kdp=None,rho=None,sn=None,heights=No
         if verbose==True:
             print('Wet snow detection will be imporved by including the SN field.')
 
-#Now for the ML algorithm Rho is the most important variable. So if the rho was not valid 
+#Now for the ML algorithm Rho is the most important variable. So if the rho was not valid, and where rho is less than the threhsold. 
     rhfill = rho.filled(fill_value = np.nan)
     whbad = np.where(np.isnan(rhfill))
-    fh[whbad] = -1    
+    fh[whbad] = -1
+    print('Qcing using RH<',minRH)
+    fh[rho<minRH] = -1
+        
 
 # Also try a little QC:
     whbad2 = np.where(rho<0.5)
@@ -182,7 +185,9 @@ def get_ml_ppi(fh,dz,height,expected_ML,nsect=36,verbose=False,azimuths=None):
             if (per_ML > 0.05) and (np.nanmean(dz[wh_sector1])> 15):
                 #print 'made it to if'
                 #print i,a
-                if np.abs(ML_medianZ-expected_ML)>2.:
+                MLcheck = np.median(ML_sector[wh_ws])
+                print (MLcheck,expected_ML)
+                if np.abs(MLcheck-expected_ML)>2.:
                     print('Melting layer is way off. Double check sounding and radar data or consider different HCA.')
                 else:
                     ML_mode[i],ML_count = stats.mode(ML_sector[wh_ws])
