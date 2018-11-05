@@ -45,17 +45,13 @@ def melting_layer(dz=None,zdr=None,ldr=None,kdp=None,rho=None,sn=None,heights=No
         if verbose==True:
             print('Wet snow detection will be imporved by including the SN field.')
 
-#Now for the ML algorithm Rho is the most important variable. So if the rho was not valid, and where rho is less than the threhsold. 
+#Now for the ML algorithm Rho is the most important variable. So if the rho was not valid, and where rho is less than the threshold. 
     rhfill = rho.filled(fill_value = np.nan)
     whbad = np.where(np.isnan(rhfill))
     fh[whbad] = -1
     print('Qcing using RH<',minRH)
-    fh[rho<minRH] = -1
+    fh[rho<=minRH] = -1
         
-
-# Also try a little QC:
-    whbad2 = np.where(rho<0.5)
-    fh[whbad2] = -1
 #In this case, fh =1 is 'other', fh = 2 is 'Wet snow'
 # Now use the returned Wet snow field to look at melting layer statistics and try to refine
 # The location of the ML. There are 2 different methods based on if the scan is an rhi or ppi.

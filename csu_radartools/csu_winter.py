@@ -77,7 +77,7 @@ def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None,sn=None,T=None,us
     #whbad = np.where(fh == -1)
     whmelt = np.where(fh == 5)
     winter_hca[whmelt] = 5
-    winter_hca[fh==-1 ] = -1
+    winter_hca[fh== -1 ] = -1
     winter_hca[fh == 0] = -1
 
     
