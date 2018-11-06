@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
-from beta_functions import get_mbf_sets_winterML
+from beta_functions import get_mbf_sets_summerML
 from csu_radartools.calc_kdp_ray_fir import hid_beta_f
 
 DEFAULT_WEIGHTS = {'DZ': [4,4], 'DR': [7,7], 'KD': [0,0], 'RH': [14,14], 'LD': [0,0],
@@ -83,7 +83,7 @@ def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
         _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose)
 
     # Now grab the membership beta function parameters
-    mbf_sets = get_mbf_sets_winterML(
+    mbf_sets = get_mbf_sets_summerML(
         use_temp=use_temp, plot_flag=plot_flag, n_types=n_types,
         temp_factor=temp_factor, band=band, verbose=verbose,fdir=fdir)
     sets = _convert_mbf_sets(mbf_sets)
