@@ -33,7 +33,7 @@ def melting_layer(dz=None,zdr=None,ldr=None,kdp=None,rho=None,sn=None,heights=No
             
 #The first step ist to run a FHC that determines 'wet snow' from 'other'
     scores = csu_fhc_cold_newml1(dz=dz, zdr=zdr, rho=rho, kdp=kdp, use_temp=False, band=band,method='linear',
-                            verbose=True,fdir='/Users/bdolan/scratch/WINTER_HCA/beta_function_parameters/')
+                            verbose=True,fdir='./beta_function_parameters/')
 
     fh = np.argmax(scores, axis=0) + 1
     
