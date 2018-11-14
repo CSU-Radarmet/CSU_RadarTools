@@ -9,15 +9,16 @@ import numpy
 
 # Set to False to use f2py instead of Cython for csu_kdp, etc.
 if os.environ.get('USE_CYTHON', False):
-    USE_CYTHON = True
+    USE_CYTHON = False
 else:
-    USE_CYTHON=False
+    USE_CYTHON = True
 
 
 if USE_CYTHON:
-    from distutils.core import setup
-    from distutils.extension import Extension
+    from setuptools import setup, Extension
     from Cython.Build import cythonize
+    from Cython.Compiler import Options
+    Options.language_level = '2'
 else:
     from numpy.distutils.core import setup, Extension
 

@@ -1,4 +1,5 @@
-#cython: boundscheck=False
+# cython: boundscheck=False
+# cython: language_level=2
 
 from libc.math cimport sqrt
 cimport numpy as np
