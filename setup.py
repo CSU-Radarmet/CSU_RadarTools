@@ -2,17 +2,15 @@
 CSU_RadarTools
 """
 
-
 import os
-import sys
 import numpy
 
-# Set to False to use f2py instead of Cython for csu_kdp, etc.
+
+# Set to False to use f2py instead of Cython for csu_kdp, etc
 if os.environ.get('USE_CYTHON', False):
     USE_CYTHON = False
 else:
     USE_CYTHON = True
-
 
 if USE_CYTHON:
     from setuptools import setup, Extension
@@ -22,8 +20,9 @@ if USE_CYTHON:
 else:
     from numpy.distutils.core import setup, Extension
 
+
 # Pull the header into a variable
-doclines = __doc__.split("\n")
+doclines = __doc__.split('\n')
 
 VERSION = '1.2'
 
@@ -31,20 +30,19 @@ VERSION = '1.2'
 PACKAGES = ['csu_radartools']
 
 if USE_CYTHON:
-    ext = '.pyx'
-    extensions = [Extension(PACKAGES[0]+'.calc_kdp_ray_fir',
-                  [PACKAGES[0]+'/calc_kdp_ray_fir'+ext])]
+    EXT = '.pyx'
 else:
-    ext = '.f'
-    extensions = [Extension(PACKAGES[0] + '.calc_kdp_ray_fir',
-                  [PACKAGES[0]+'/calc_kdp_ray_fir'+ext])]
+    EXT = '.f'
+
+extensions = [Extension(PACKAGES[0] + '.calc_kdp_ray_fir',
+                        [PACKAGES[0] + '/calc_kdp_ray_fir' + EXT])]
 
 if USE_CYTHON:
     extensions = cythonize(extensions)
 
+
 # Run setup
-setup(
-      name='csu_radartools',
+setup(name='csu_radartools',
       version=VERSION,
       url='http://radarmet.atmos.colostate.edu',
       author='Brenda Dolan, Brody Fuchs, Timothy Lang',
@@ -69,6 +67,6 @@ setup(
               csu_fhc, csu_kdp, csu_dsd, csu_liquid_ice_mass, csu_misc,
               csu_blended_rain, fundamentals)
           """,
-      ext_modules = extensions,
-      include_dirs = [numpy.get_include(), '.']
+      ext_modules=extensions,
+      include_dirs=[numpy.get_include(), '.']
       )
