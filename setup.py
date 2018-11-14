@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Python tools for polarimetric radar retrievals.
 
@@ -11,6 +12,7 @@ Works on Windows, but you'll need to install a C++ compiler (e.g. MSVC >=2015).
 
 import os
 import numpy
+import setuptools
 
 
 # Set to False to use f2py instead of Cython for csu_kdp, etc
@@ -34,7 +36,7 @@ doclines = __doc__.split('\n')
 VERSION = '1.2'
 
 # Set variables for setup
-PACKAGES = ['csu_radartools']
+PACKAGES = setuptools.find_packages()
 
 if USE_CYTHON:
     EXT = '.pyx'
@@ -58,8 +60,6 @@ setup(name='csu_radartools',
       description=doclines[1],
       long_description=__doc__,
       keywords='radar precipitation meteorology weather',
-      packages=PACKAGES,
-      package_data={'csu_radartools': ['beta_function_parameters/*.csv']},
       classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Education',
@@ -77,6 +77,10 @@ setup(name='csu_radartools',
           'Programming Language :: Python :: 3.6',
           'Topic :: Scientific/Engineering :: Atmospheric Science',
           ],
+      packages=PACKAGES,
+      package_data={'csu_radartools': ['beta_function_parameters/*.csv']},
       ext_modules=extensions,
-      include_dirs=[numpy.get_include(), '.']
+      include_dirs=[numpy.get_include(), '.'],
+      install_requires=['numpy', 'pandas', 'matplotlib', 'scipy', 'cython'],
+      python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
       )

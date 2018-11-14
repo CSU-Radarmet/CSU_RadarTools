@@ -1,0 +1,3 @@
+include README.md
+recursive-include notebooks *.ipynb
+recursive-include tests *.py
