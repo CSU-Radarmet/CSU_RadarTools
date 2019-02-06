@@ -1,4 +1,4 @@
-# =============================
+# -*- coding: utf-8 -*-
 """
 CSU_RadarTools - Python Package that contains a variety of functions
 for polarimetric radar retrievals

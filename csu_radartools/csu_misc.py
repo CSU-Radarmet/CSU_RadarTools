@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 #############
 csu_misc sub-module of csu_radartools

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 #############
 csu_dsd sub-module of csu_radartools

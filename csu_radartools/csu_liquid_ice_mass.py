@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 csu_liquid_ice_mass.py
 

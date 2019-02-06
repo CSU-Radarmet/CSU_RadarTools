@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 NAME:
 beta_functions.py

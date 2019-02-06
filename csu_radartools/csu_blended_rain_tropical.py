@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 csu_blended_rain_tropical.py
 
