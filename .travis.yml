@@ -8,9 +8,9 @@ env:
 
 python:
     - "2.7"
-    - "3.4"
     - "3.5"
     - "3.6"
+    - "3.7"
 
 addons:
   apt:
@@ -19,8 +19,6 @@ addons:
 
 language: python
 
-before_install:
-- pip install pytest
 install: source continuous_integration/install.sh
-#script: eval xvfb-run pytest .
-script: python -m pytest  tests/
+# script: eval xvfb-run pytest .
+script: python -m pytest tests/
