@@ -1,25 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-csu_blended_rain_tropical.py
+Python remake of Brenda Dolan's code to calculate water and ice mass.
 
-# Brody Fuchs, CSU, Oct 2014
-# brfuchs@atmos.colostate.edu
-
-# python remake of Brenda's code to calculate water and ice mass
+Brody Fuchs, CSU, Oct 2014
+brfuchs@atmos.colostate.edu
 
 Amendments by
 Timothy Lang (tjlangco@gmail.com)
-2/20/2015
 
 Designed around tropical, oceanic equations found in Thompson et al. 2016, and
 designed to work with the Powell and Houze 2015 rain typing (or simple
 convective /stratiform)
 Brenda Dolan (bdolan@atmos.colostate.edu)
-8/2016
-
-Added the dBZ + Kdp threshold back in to eliminate small reflectivities with non-zero Kdp
-blowing up the rain rates.
-11/2016
 """
 
 from __future__ import absolute_import

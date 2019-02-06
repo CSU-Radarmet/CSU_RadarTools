@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-#############
-csu_misc sub-module of csu_radartools
+csu_misc sub-module of csu_radartools.
 
 Contacts
 --------
@@ -12,21 +11,6 @@ Timothy Lang (tjlangco@gmail.com)
 References
 ----------
 Lang et al. (2007; JCLIM) - Insect filter
-
-Change Log
-----------
-v1.3 Major Updates (09/02/2015):
-1. Vastly sped up despeckle routine using scipy.
-
-v1.2 Major Updates (08/05/2015):
-1. Made Python 3 compatible.
-2. Made pep8 compatible.
-
-v1.1 Major Updates (05/08/2015):
-1. Added despeckle() along with a private helper function.
-2. Added warnings.warn import.
-
-#############
 """
 from __future__ import division
 import numpy as np

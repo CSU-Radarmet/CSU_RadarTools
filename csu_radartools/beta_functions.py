@@ -47,26 +47,6 @@ bdolan@atmos.colostate.edu
 
 ORIGINAL DATE:
 26 April 2002.
-
-MODIFICATIONS:
-28 April 2002:  Changed the fuzzy sets to include vertical ice and
-get rid of low/high density snow.
-
-15 May 2002:  Changed KDP MBF for vertical ice to be unity from -0.2
-to -0.6.  Used to be from -0.6 to 0.0.  This didn't make much difference.
-
-19 February 2003:  Changed MBFs for wet/dry graupel and Wet Snow to
-conform to Liu and Chandrasekar (2000).  Changed MBF for vertical ice to
-conform to Carey and Rutledge (1998).
-
-29 January 2009:  Changed the MBFS to the theory-based S-band values. NOTE:
-                  LDR VALUES WERE NOT MODIFIED.
-
-08 February 2012: Changed the categories and the MBF values based on scattering
-                  simulations. NOTE: LDR values from simulations were added. BD
-10 June 2012: Adjusted MBFs for performance. BD
-25 January 2015: Pythonized (TJL)
-05 August 2015: Python 3 compatible (TJL)
 """
 
 from __future__ import division

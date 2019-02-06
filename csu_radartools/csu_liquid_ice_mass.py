@@ -1,30 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-csu_liquid_ice_mass.py
+Python remake of Brenda Dolan's code to calculate water and ice mass.
 
-Modifications by Timothy Lang
-tjlangoc@gmail.com
-1/27/2015
-rev1 08/05/2015 - Python 3 compliant
-rev2 11/20/2015 - Performance improvements
+This program will calculate ice and water mass at specified height levels
+given Z and ZDR at each grid point.
 
-# Brody Fuchs, CSU, Oct 2014
-# brfuchs@atmos.colostate.edu
+Based on Code from A. Rowe and T. Lang from L. Nelson and L. Carey.
 
-# python remake of Brenda's code to calculate water and ice mass
-# See original comments below
-#***************************************************************************
-#***************************************************************************
-# This program will calculate ice and water mass at specified height levels
-# given Z and ZDR at each grid point.
-#
-# Based on Code from A. Rowe and T. Lang from L. Nelson and L. Carey.
-# Brenda Dolan
-# February 27, 2012
-# bdolan@atmos.colostate.edu
-#***************************************************************************
-#***************************************************************************
-
+Brenda Dolan
+February 27, 2012
+bdolan@atmos.colostate.edu
 """
 from __future__ import division
 import numpy as np

@@ -1,25 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-csu_blended_rain.py
+Python remake of Brenda Dolan's code to calculate water and ice mass.
 
-# Brody Fuchs, CSU, Oct 2014
-# brfuchs@atmos.colostate.edu
-
-# python remake of Brenda's code to calculate water and ice mass
+Brody Fuchs, CSU, Oct 2014
+brfuchs@atmos.colostate.edu
 
 Amendments by
 Timothy Lang (tjlangco@gmail.com)
-2/20/2015
-rev1 07/10/2015
-rev2 08/03/2015 - Python 3
-rev3 09/16/2015 - Fixed logical inconsistencies leading to lack of
-                  rainfall calculation in HID = rain + low Z + high Kdp/Zdr
-rev4 05/10/2016 - Added ability for user to provide custom parameters to
-                  polarimetric rainfall equations via the blended rainfall
-                  routines. Also customized blended routines to handle
-                  non-S bands. In this case, only R-Z and R-Kdp are used.
-rev5 07/28/2016 - Moved base rainfall functions to common, and also now import
-                  _check_for_array from common.
 """
 
 from __future__ import absolute_import
@@ -70,7 +57,7 @@ def calc_blended_rain(
     method = 4: R(Z)
     method = 5: R(Zrain)
 
-    See Bringi and Chandrasekar textbook for more information
+    See Bringi and Chandrasekar textbook for more information.
     """
     # Initialize, check for all vars, check for scalars
     if dz is None or kdp is None or zdr is None:
@@ -188,9 +175,7 @@ def csu_hidro_rain(
     method = 3: R(Z, Zdr)
     method = 4: R(Z)
 
-    See Bringi and Chandrasekar textbook for more information
-    fixed 9/16/2015 - No rain was being calculated when low Z & high Kdp/Zdr
-                      yet cond_rain == True
+    See Bringi and Chandrasekar textbook for more information.
     """
     # Initialize, check for all necessary vars, and allow scalars
     if dz is None or kdp is None or zdr is None or fhc is None:

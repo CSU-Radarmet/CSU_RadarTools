@@ -1,21 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-csu_fhc.py
+Brenda Dolan's HID code ported from IDL.
 
 Brody Fuchs, CSU, Sept 2014
 brfuchs@atmos.colostate.edu
 
-Porting over Brenda Dolan's HID code from IDL
 (apparently originally from Kyle Wiens)
 
 Modifications by Timothy Lang
 tjlangoc@gmail.com
-01/21/2015
-08/05/2015 - Python 3
-11/20/2015 - Sped up hid_beta by using f2py + working w/ 1-D flattened arrays
-             that are later reshaped to the necessary shape.
-05/03/2016 - Cython now an option for speeding up the hid_beta routines.
-
 """
 
 from __future__ import division
