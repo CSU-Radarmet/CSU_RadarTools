@@ -14,7 +14,7 @@ Fuzzy-Logic Hydrometeor Identification
 #
 #  This method is based on the method of Liu and Chandrasekar (2000),
 #  J. Atmos. Oceanic Tech., _17_, 140-164.  This assumes summer convective
-#  storms.   
+#  storms.
 #  However, my method uses a weighted sum of each truth value instead
 #  of the straight multiplication method of L&C (2000).
 #
@@ -24,7 +24,7 @@ Fuzzy-Logic Hydrometeor Identification
 # exceptions:  The horizontal reflectivity and temperature (if used) truth
 # values are multiplied by the weighted sum of the others, thus effectively
 # weighting the final output more strongly on the horizontal reflectivity
-# and temperature (if present).  
+# and temperature (if present).
 #
 # Uses parameters defined in 'cdf_beta_functions.pro' to define the
 # m,a,b parameters for each hydro type's beta function.  The independent
@@ -42,7 +42,7 @@ Fuzzy-Logic Hydrometeor Identification
 #        m = center
 #        a = width
 #        b = slope
-# 
+#
 # Anticipate having up to 6 input data fields and 11 fuzzy sets (HID types) for
 # summer storms.
 #
@@ -77,10 +77,10 @@ Fuzzy-Logic Hydrometeor Identification
 #
 # INPUT PARAMETERS:
 #        REQUIRED INPUTS
-# radar_data -- A structure containing the radar data 
+# radar_data -- A structure containing the radar data
 #               (Should not matter if in radial
 #                or gridded format).  The structure must
-#               have one of the following tag names: DZ,DR,KD,LD,RH. 
+#               have one of the following tag names: DZ,DR,KD,LD,RH.
 #               These correspond to horiz. reflect, diff. reflect.,
 #               spec. diff. phase, linear depol. ratio, and corr. coeff.,
 #               respectively.  For example, to use all these variables in
@@ -97,7 +97,7 @@ Fuzzy-Logic Hydrometeor Identification
 #
 #               Or if you have only horiz. reflect. and
 #               diff. reflect. define the structure like this:
-#              
+#
 #               radar_data = {DZ:dz_data,$
 #                             DR:DR_data}
 #
@@ -134,9 +134,9 @@ Fuzzy-Logic Hydrometeor Identification
 # T -- Temperature, either single value or a 1-D vertical profile with the
 #      temperature defined at each vertical grid point of the radar data.
 #        --BD 2-2012: Changed to require this be the same size as the input data.
-# weights -- Weights for the different variables. Added this as a keyword such 
-#           that you don't need a speciifc cdf_fhc for different radars.  
-#           If weights is not passed, then default values are used. 
+# weights -- Weights for the different variables. Added this as a keyword such
+#           that you don't need a speciifc cdf_fhc for different radars.
+#           If weights is not passed, then default values are used.
 #           This is a structure like fhc_vars:
 #        Weights= { W_Zh: 1.5 ,
 #                   W_Zdr: 0.8,
@@ -156,7 +156,7 @@ Fuzzy-Logic Hydrometeor Identification
 #
 #BD 2-2012: CHANGED SO NONE OF THESE ARE AVAILABLE ANYMORE. By making temperature
 #            The same size as the other variables, no longer need /rhi or /ppi.
-#            Sum_it never quite worked right for me anyway, so stick with the 
+#            Sum_it never quite worked right for me anyway, so stick with the
 #           Hybrid method for now.
 # rhi -- IF set, assume temperature is an array of temperatures at
 #        each z level of the radar field arrays.  Program assumes that the
@@ -171,9 +171,9 @@ Fuzzy-Logic Hydrometeor Identification
 # a 2-D cross-section of data to this program and you are including
 # temperature.  Otherwise, if you are passing a 3-D array and including
 # temperature, the program will assume the 3rd dimension of the input radar
-# data corresponds to height.   
+# data corresponds to height.
 #
-#IF radar_data is just single values, then the scores for each category given 
+#IF radar_data is just single values, then the scores for each category given
 #   those inputs will be printed out.
 #
 #IF the compare keyword is set, then the output will be a structure that contains
@@ -216,7 +216,7 @@ Fuzzy-Logic Hydrometeor Identification
 # loops to do this.  It took some brain power to figure out how to
 # keep the maximum scores from each iteration, but apparently, my
 # brain was up to the task.  This runs MUCH faster now, with identical
-# results. 
+# results.
 #
 # 24 July 2002: Decomposed rain/hail mix into large and small hail
 #               components.
@@ -231,9 +231,9 @@ Fuzzy-Logic Hydrometeor Identification
 #
 # 21 January 2004:  Added option to use a weighted sum for all variables by
 #                   passing the /Sum_It keyword.
-# 22 February 2012: Modified to be more modular, and no longer require so many 
+# 22 February 2012: Modified to be more modular, and no longer require so many
 #                   keywords.
-#                    Also set up to pass in a single set of radar observations to 
+#                    Also set up to pass in a single set of radar observations to
 #                   calculate the scores.
 #                    B.D. 2-2012
 #
@@ -270,9 +270,9 @@ MANY POINTS OUT OF DATE
 #############################
 # Brody Fuchs, Oct 2014, converting the IDL code to python here
 # This program essentially dublicates the fortran program
-# hybridrain_mod5.f.  It determine best polarimetric 
+# hybridrain_mod5.f.  It determine best polarimetric
 # rainfall estimator, based on thresholds of ZH, ZDR, and KDP,
-# as well as Ice fraction.  
+# as well as Ice fraction.
 # The input files are 2-D cdf (gridded to a specific ht).
 #
 # The program also does hydro ID, using the appropriate subroutines.
@@ -297,7 +297,7 @@ MANY POINTS OUT OF DATE
 
 #cdf_array=intarr(3)
 
-### IF CALLING FROM BRORADAR, ALREADY HAVE DATA, DONT NEED TO READ IN    
+### IF CALLING FROM BRORADAR, ALREADY HAVE DATA, DONT NEED TO READ IN
 # open the cdf files
 #    dir = '/data3/brfuchs'
 #cdffile = findfile(dir+'*.cdf',count=numfile)
@@ -325,8 +325,8 @@ MANY POINTS OUT OF DATE
 
 # now run the HID program
 # first have to define a couple of structures
-# 1st structure is the radar parameter tags and array 
-# that the tag corresponds to - this is described in the 
+# 1st structure is the radar parameter tags and array
+# that the tag corresponds to - this is described in the
 # HID subroutine cdf_fhc.pro
 #
 # for chill rain maps, input cdf files have only DZ,DR, and KD
@@ -364,7 +364,7 @@ MANY POINTS OUT OF DATE
 #############################
 ###### HID rain rate calculations ########
 
-#This is a blended polarimetric rainfall algorithm that selects 
+#This is a blended polarimetric rainfall algorithm that selects
 #rainfall estimators based on a hydrometeor identification scheme.
 #
 #Modified by Brenda Dolan
@@ -376,7 +376,7 @@ MANY POINTS OUT OF DATE
 
 # first step is to fit the consensus of hid from all 6 inputs.  There
 # are 3 categories to consider: rain, mix, ice. the
-# category with the biggest number wins. 
+# category with the biggest number wins.
 # 1=rain(c_hid_consensus=1)
 # 2=mix(c_hid_consensus=2)
 # 3=ice(c_hid_consensus=3)
@@ -388,14 +388,14 @@ MANY POINTS OUT OF DATE
 # (c_hid_consensus=6)
 
 # this is a variable that keeps track of which hid is actually
-# used for the site in question, based on the relative totals 
-# of the 6 values.  
+# used for the site in question, based on the relative totals
+# of the 6 values.
 #   c_hid_consensus=dz
 #   c_hid_consensus[*]=0.
 
 # here is variable to store the actual rr estimate method for hidzk
 # the values go from 1-5 just like for zk; however, there is also a method
-# 6 which represents the result when mix and rain HID end in a tie: 
+# 6 which represents the result when mix and rain HID end in a tie:
 # in this case, an average between the value calculated using the mix (r(kd))
 # and rain methods (could be r(kd), r(kd,dr), r(zh) or r(zh,dr))
 #############################
@@ -416,12 +416,12 @@ MAINTAINED FOR POSTERITY'S SAKE, MAY BE OUT OF DATE
 #restrictive to identify ice below the melting level...based upon personal
 #communication with Larry.  Ice and Water mass are calculated using the Zdp
 #methodology outlined in Bringi and Chandra (2001)
-# Define empirical thresholds at each vertical level to restrict ice below 
+# Define empirical thresholds at each vertical level to restrict ice below
 #   melting level
-# These delta thresholds are set up for a 0.5 km grid. These are to make it more 
+# These delta thresholds are set up for a 0.5 km grid. These are to make it more
 #   difficult to get ice in the lowest levels of the grid.
 #                delta_thresh[*] = 2.0
-#                delta_thresh[0] = 11.3333  ; 0.5 km 
+#                delta_thresh[0] = 11.3333  ; 0.5 km
 #                delta_thresh[1] = 10.0000  ; 1.0 km
 #                delta_thresh[2] = 8.66667  ; 1.5 km
 #                delta_thresh[3] = 7.33333  ; 2.0 km

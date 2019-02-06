@@ -28,7 +28,7 @@ conda create -n testenv --yes pip python=$TRAVIS_PYTHON_VERSION
 source activate testenv
 
 # Install dependencies
-conda install --yes pandas cython basemap numpy scipy matplotlib netcdf4 nose hdf4=4.2.12 
+conda install --yes pandas cython basemap numpy scipy matplotlib netcdf4 nose hdf4=4.2.12
 pip install skewt pytest
 conda install --yes -c conda-forge arm_pyart
 
