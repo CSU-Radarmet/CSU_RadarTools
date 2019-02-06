@@ -4,7 +4,7 @@
 # project: https://github.com/scikit-learn/scikit-learn
 
 # This script is meant to be called by the "install" step defined in
-# .travis.yml. See http://docs.travis-ci.com/ for more details.
+# .travis.yml. See https://docs.travis-ci.com/ for more details.
 # The behavior of the script is controlled by environment variabled defined
 # in the .travis.yml in the top level folder of the project.
 
@@ -16,7 +16,7 @@ set -e
 # a conda based install of the SciPy stack on multiple versions of Python
 # as well as use conda and binstar to install additional modules which are not
 # in the default repository.
-wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
+wget https://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh \
     -O miniconda.sh
 chmod +x miniconda.sh
 ./miniconda.sh -b

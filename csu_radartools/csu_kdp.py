@@ -97,7 +97,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     Timothy J. Lang, David A. Ahijevych, Stephen W. Nesbitt, Richard E.
     Carbone, Steven A. Rutledge, and Robert Cifelli, 2007: Radar-Observed
     Characteristics of Precipitating Systems during NAME 2004. J. Climate,
-    20, 1713–1733. doi: http://dx.doi.org/10.1175/JCLI4082.1
+    20, 1713–1733. doi: https://dx.doi.org/10.1175/JCLI4082.1
 
     Arguments
     ---------
