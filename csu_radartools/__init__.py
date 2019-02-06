@@ -10,4 +10,6 @@ Top-level package (:mod:`csu_radartools`)
 
 """
 
+from ._version import __version__
+
 __all__ = [s for s in dir() if not s.startswith('_')]
