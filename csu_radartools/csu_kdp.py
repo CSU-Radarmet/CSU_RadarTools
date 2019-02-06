@@ -1,50 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Timothy James Lang
-tjlangco@gmail.com
-
-Last Updated 03 May 2016 (Python 2.7/3.4)
-Last Updated 26 July 2005 (IDL)
-
-csu_kdp v1.6
-
-Change Log
-----------
-v1.6 Major Changes (05/03/2016):
-1. Cython now an option for speeding up KDP routines.
-
-v1.5.1 Major Changes (12/08/2015):
-1. Made number of gates used for standard deviation calculation adjustable.
-
-v1.5 Major Changes (11/17/2015):
-1. Now using a Fortran shared object (calc_kdp_ray_fir) to
-   do the ray-based KDP calculations. This has vastly sped up
-   the overall KDP processing (> 100x). f2py FTW!
-2. Updated calc_kdp_bringi to fail softly when (window/gs) is not
-   even.
-
-v1.4 Major Changes (09/04/2015):
-1. Added window keyword to enable stretching the FIR window (e.g.,
-   use a 21-pt filter over 5 km with 250-m gate spacing).
-2. Forcing FIR order to be even, _calc_kdp_ray will crash otherwise.
-
-v1.3 Major Changes (08/05/2015):
-1. Made Python 3 compatible.
-2. Fixed issue with non-integer array indices.
-
-v1.2 Major Changes (07/10/2015):
-1. Made sub-module pep8 compliant.
-
-v1.1 Major Changes (04/27/2015):
-1. Made algorithm work with a user-defined gate spacing (via gs keyword).
-   Untested on gate spacings that do not divide evenly into the 3-km window
-   used for filtering the PHIDP data, however. But common gate spacings
-   like 50, 100, 150, 200, 250, and 300 meters should all work fine.
-2. Made the algorithm capable of receiving 2D array inputs (i.e., azimuth &
-   range) as well as 1D inputs (range only). If 2D, rng needs to be 2D as
-   well. However, thsd should remain a scalar, or 1D and only vary by range.
-
+Functions to estimate specific differential phase (KDP) using various methods.
 """
+
 from __future__ import division, print_function
 import numpy as np
 from numpy import linalg
@@ -97,7 +55,7 @@ def calc_kdp_bringi(dp=None, dz=None, rng=None, thsd=12, nfilter=1,
     Timothy J. Lang, David A. Ahijevych, Stephen W. Nesbitt, Richard E.
     Carbone, Steven A. Rutledge, and Robert Cifelli, 2007: Radar-Observed
     Characteristics of Precipitating Systems during NAME 2004. J. Climate,
-    20, 1713–1733. doi: http://dx.doi.org/10.1175/JCLI4082.1
+    20, 1713–1733. doi: https://dx.doi.org/10.1175/JCLI4082.1
 
     Arguments
     ---------

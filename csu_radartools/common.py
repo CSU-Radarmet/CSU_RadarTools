@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-common sub-module of csu_radartools
-
-Contains commonly used functions.
-
-Nick Guy 10 May 2016
-Timothy Lang Rev1 (7/28/2016) - Moved functions from csu_blended_rain here.
+Common sub-module of csu_radartools; contains commonly used functions.
 """
+
 import numpy as np
 
 ##############
