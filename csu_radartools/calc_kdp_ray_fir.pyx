@@ -1,4 +1,5 @@
-#cython: boundscheck=False
+# cython: boundscheck=False
+# cython: language_level=2
 
 from libc.math cimport sqrt
 cimport numpy as np
@@ -12,8 +13,6 @@ def LSE(double[:] x, double[:] y, int n, float bad):
     INPUTs: x(i), y(i), n, (i = 1, ..., n ).
     OUTPUTs: a (slope), b (intercept).
     Li Liu - Sep. 23, 92
-    Timothy Lang - Updated for Cython, 05/03/2016
-        - Confirmed ~50 times faster than 1-deg np.polyfit()
     """
     cdef:
         float a
@@ -50,8 +49,6 @@ def calc_kdp_ray_fir(
     Calculate KDP along a 1-D ray of radar data, using an FIR filter to first
     smooth the differential phase. Standard deviation of phase is also
     calculated.
-
-    Cython v1.0 (05/03/2015) by Timothy Lang (tjlangco@gmail.com)
 
     Arguments
     ---------
@@ -185,8 +182,6 @@ def hid_beta_f(int ngates, float[:] x_arr, float a, float b, float m):
     ngates = Number of gates
     x_arr = Array to process
     a, b , m = Beta function parameters
-
-    Cython v1.0 (05/03/2015) by Timothy Lang (tjlangco@gmail.com)
     """
 
     cdef:

@@ -1,24 +1,17 @@
+# -*- coding: utf-8 -*-
 """
-csu_blended_rain_tropical.py
+Python remake of Brenda Dolan's code to calculate water and ice mass.
 
-# Brody Fuchs, CSU, Oct 2014
-# brfuchs@atmos.colostate.edu
-
-# python remake of Brenda's code to calculate water and ice mass
+Brody Fuchs, CSU, Oct 2014
+brfuchs@atmos.colostate.edu
 
 Amendments by
 Timothy Lang (tjlangco@gmail.com)
-2/20/2015
 
 Designed around tropical, oceanic equations found in Thompson et al. 2016, and
 designed to work with the Powell and Houze 2015 rain typing (or simple
 convective /stratiform)
 Brenda Dolan (bdolan@atmos.colostate.edu)
-8/2016
-
-Added the dBZ + Kdp threshold back in to eliminate small reflectivities with non-zero Kdp
-blowing up the rain rates.
-11/2016
 """
 
 from __future__ import absolute_import
@@ -78,6 +71,19 @@ def calc_blended_rain_tropical(
     See Bringi and Chandrasekar textbook for more information
     See also Thompson et al. 2016 for more details of the Tropical Blended
     algorithm
+    
+    Note
+    ----
+    
+    The coefficients are defined as Z=aR**b .
+    
+    The T15 equations are defined as:
+    R = a*Kdp*zeta_dr**c and R=a*Zh*zeta_dr**c
+    where as the algorithm expects it in the form
+    R = a*Kdp*10.**(Zdr*c)  R=a*Zh*10.**(Zdr*c)
+
+    These just differ in the by 1/10. in the exponent of Zdr, so be sure to
+    divide by 10. when sending to the algorithm.
     """
     bnd = band
     # Initialize, check for all vars, check for scalars
@@ -92,19 +98,9 @@ def calc_blended_rain_tropical(
             kdp = np.array([kdp])
             zdr = np.array([zdr])
 
-    """
-    NOTE: The T15 equations are defined as:
-        R = a*Kdp*zeta_dr**c and R=a*Zh*zeta_dr**c
-        where as the algorithm expects it in the form
-        R = a*Kdp*10.**(Zdr*c)  R=a*Zh*10.**(Zdr*c)
-
-        These just differ in the by 1/10. in the exponent of Zdr, so be sure to
-        divide by 10. when sending to the algorithm.
-    """
     if predef == 'True':
         """
-        NOTE: The coefficients are defined as:
-        Z=aR**b
+
         """
         # Convective R-Z
         r_z_a_c = 126.

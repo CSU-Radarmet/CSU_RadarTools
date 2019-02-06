@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 """
-#############
-csu_dsd sub-module of csu_radartools
+Functions for calculating/estimating drop size distributions from radar data.
 
 Contacts
 --------
@@ -12,10 +12,6 @@ References
 Bringi et al. (2004; JTECH) - Alternate S-band retrieval
 Bringi et al. (2009; JTECH) - C-band retrieval
 Bringi et al. (2013; AMS Radar Conf) - S-band retrieval
-
-rev1 (07/28/2016) - Changed import location for _check_for_array
-
-#############
 """
 
 from __future__ import absolute_import
