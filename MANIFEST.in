@@ -1,3 +1,4 @@
 include README.md
+include LICENSE.txt
 recursive-include notebooks *.ipynb
 recursive-include tests *.py
