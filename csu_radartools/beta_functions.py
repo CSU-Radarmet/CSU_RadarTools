@@ -1,51 +1,46 @@
 # -*- coding: utf-8 -*-
 """
-NAME:
-beta_functions.py
+Generate membership functions for hydrometeor types based on scattering models.
 
-Smaller b values means falloff is slower
+Construct Membership Beta Functions (MBFs) parameters for each hydrometeor
+type and fuzzy set based on scattering simulations (Dolan and Rutledge, 2009).
 
-PURPOSE:
-Contruct Membership Beta Functions (MBFs) parameters for each
-hydrometeor type and fuzzy set based on scattering simulations (Dolan and
-Rutledge, 2009)
+Smaller b values means falloff is slower.
 
-# Basic form of a Membership Beta Function is:
-#
-#                         1
-#               ---------------------
-# beta(x) =         |              |^b
-#                1+ |  ((x-m)/a)^2 |
-#                   |              |
-#
-#  Where x = input data (Zh, Zdr, etc)
-#        m = center
-#        a = width
-#        b = slope
+Basic form of a Membership Beta Function is::
 
-Anticipate having 6 input data fields and 10 fuzzy sets (HID types)
+                            1
+                  ---------------------
+    beta(x) =         |              |^b
+                   1+ |  ((x-m)/a)^2 |
+                      |              |
 
-Input data fields:           HID types:           Fuzzy set:
--------------------           ----------           ----------
-     Z_h                      Drizzle                  1
-     Z_dr                     Rain                     2
-     K_dp                     Ice Crystals             3
-     LDR                      Aggregates               4
-     rho_hv                   Wet Snow                 5
-     Temperature              Vertical Ice             6
-                              Low Density Graupel      7
-                              High Density Graupel     8
-                              Hail                     9
-                              Big Drops               10
+     Where x = input data (Zh, Zdr, etc)
+           m = center
+           a = width
+           b = slope
 
-ORIGNAL AUTHOR:
+Anticipate having 6 input data fields and 10 fuzzy sets (HID types)::
+
+    Input data fields:           HID types:           Fuzzy set:
+    -------------------           ----------           ----------
+         Z_h                      Drizzle                  1
+         Z_dr                     Rain                     2
+         K_dp                     Ice Crystals             3
+         LDR                      Aggregates               4
+         rho_hv                   Wet Snow                 5
+         Temperature              Vertical Ice             6
+                                  Low Density Graupel      7
+                                  High Density Graupel     8
+                                  Hail                     9
+                                  Big Drops               10
+
+Contact
+-------
+
 Kyle C. Wiens
-
-PRINCIPAL CONTACT:
 Brenda Dolan
 bdolan@atmos.colostate.edu
-
-ORIGINAL DATE:
 26 April 2002.
 """
 

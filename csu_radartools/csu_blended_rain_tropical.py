@@ -71,6 +71,19 @@ def calc_blended_rain_tropical(
     See Bringi and Chandrasekar textbook for more information
     See also Thompson et al. 2016 for more details of the Tropical Blended
     algorithm
+    
+    Note
+    ----
+    
+    The coefficients are defined as Z=aR**b .
+    
+    The T15 equations are defined as:
+    R = a*Kdp*zeta_dr**c and R=a*Zh*zeta_dr**c
+    where as the algorithm expects it in the form
+    R = a*Kdp*10.**(Zdr*c)  R=a*Zh*10.**(Zdr*c)
+
+    These just differ in the by 1/10. in the exponent of Zdr, so be sure to
+    divide by 10. when sending to the algorithm.
     """
     bnd = band
     # Initialize, check for all vars, check for scalars
@@ -85,19 +98,9 @@ def calc_blended_rain_tropical(
             kdp = np.array([kdp])
             zdr = np.array([zdr])
 
-    """
-    NOTE: The T15 equations are defined as:
-        R = a*Kdp*zeta_dr**c and R=a*Zh*zeta_dr**c
-        where as the algorithm expects it in the form
-        R = a*Kdp*10.**(Zdr*c)  R=a*Zh*10.**(Zdr*c)
-
-        These just differ in the by 1/10. in the exponent of Zdr, so be sure to
-        divide by 10. when sending to the algorithm.
-    """
     if predef == 'True':
         """
-        NOTE: The coefficients are defined as:
-        Z=aR**b
+
         """
         # Convective R-Z
         r_z_a_c = 126.

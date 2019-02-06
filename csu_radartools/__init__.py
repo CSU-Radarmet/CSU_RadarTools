@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-CSU_RadarTools - Python Package that contains a variety of functions
-for polarimetric radar retrievals
-==================================
+Package that contains a variety of functions for polarimetric radar retrievals.
+
+=========================================
 Top-level package (:mod:`csu_radartools`)
-==================================
+=========================================
 
 .. currentmodule:: csu_radartools
-
 
 """
 
