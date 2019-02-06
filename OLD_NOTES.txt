@@ -310,7 +310,7 @@ MANY POINTS OUT OF DATE
 
 # READ IN NETCDF FILE AND GET DATA
 #    for var in vars:
-#    	radar_data[var] = nc.variables[var][:]
+#       radar_data[var] = nc.variables[var][:]
 # create x,y arrays that will be used in the output cdf files
 #    lon=xfirst+xdelta*findgen(cdf_array[0])
 #    lat=yfirst+ydelta*findgen(cdf_array[1])

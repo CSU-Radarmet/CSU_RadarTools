@@ -76,8 +76,8 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
     Vertical Ice             6
     Low-Density Graupel      7
     High-Density Graupel     8
-    Hail			         9
-    Big Drops		         10
+    Hail                     9
+    Big Drops                10
 
     """
 

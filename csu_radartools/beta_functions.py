@@ -175,8 +175,8 @@ def get_mbf_sets_summer(use_temp=True, plot_flag=False, n_types=10,
     Vertical Ice             6
     Low-Density Graupel      7
     High-Density Graupel     8
-    Hail			         9
-    Big Drops		         10
+    Hail                     9
+    Big Drops                10
 
     Arguments:
     use_temp = Flag to create T beta function sets
