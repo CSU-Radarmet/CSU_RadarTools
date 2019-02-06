@@ -10,7 +10,7 @@
 
 set -e
 # use next line to debug this script
-#set -x
+# set -x
 
 # Use Miniconda to provide a Python environment.  This allows us to perform
 # a conda based install of the SciPy stack on multiple versions of Python
@@ -28,11 +28,9 @@ conda create -n testenv --yes pip python=$TRAVIS_PYTHON_VERSION
 source activate testenv
 
 # Install dependencies
-conda install --yes pandas cython basemap numpy scipy matplotlib netcdf4 nose hdf4=4.2.12
-pip install skewt pytest
-conda install --yes -c conda-forge arm_pyart
-
-
+conda install --yes pandas cython basemap numpy scipy matplotlib netcdf4 nose hdf4=4.2.12 pytest
+conda install --yes -c defaults -c conda-forge arm_pyart
+pip install skewt
 
 #if [[ $PYTHON_VERSION == '2.7' ]]; then
 #    pip install xmltodict
