@@ -40,3 +40,4 @@ spyder_crash.log
 *.tmp
 *.temp
 *.bak
+pip-wheel-metadata/
