@@ -71,12 +71,12 @@ def calc_blended_rain_tropical(
     See Bringi and Chandrasekar textbook for more information
     See also Thompson et al. 2016 for more details of the Tropical Blended
     algorithm
-    
+
     Note
     ----
-    
+
     The coefficients are defined as Z=aR**b .
-    
+
     The T15 equations are defined as:
     R = a*Kdp*zeta_dr**c and R=a*Zh*zeta_dr**c
     where as the algorithm expects it in the form
