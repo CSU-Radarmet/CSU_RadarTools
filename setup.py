@@ -11,23 +11,34 @@ Works on Windows, but you'll need to install a C++ compiler (e.g. MSVC >=2015).
 """
 
 import os
-import numpy
 import setuptools
+
+try:
+    import numpy
+except ImportError:
+    raise RuntimeError("Cannot find NumPy. Please install it first "
+                       "or use pip >= 10, which will do so automatically.")
 
 
 # Set to False to use f2py instead of Cython for csu_kdp, etc
-if os.environ.get('USE_CYTHON', False):
-    USE_CYTHON = False
-else:
+if ('USE_CYTHON' not in os.environ
+        or os.environ.get('USE_CYTHON').lower() not in {'0', 'false', 'no'}):
     USE_CYTHON = True
+else:
+    USE_CYTHON = False
 
 if USE_CYTHON:
-    from setuptools import setup, Extension
-    from Cython.Build import cythonize
-    from Cython.Compiler import Options
+    from setuptools import setup, Extension  # analysis:ignore
+    try:
+        import Cython  # analysis:ignore
+    except ImportError:
+        raise RuntimeError("Cannot find Cython. Please install it first "
+                           "or use pip >= 10, which will do so automatically.")
+    from Cython.Build import cythonize  # analysis:ignore
+    from Cython.Compiler import Options  # analysis:ignore
     Options.language_level = '2'
 else:
-    from numpy.distutils.core import setup, Extension
+    from numpy.distutils.core import setup, Extension  # analysis:ignore
 
 
 # Pull the header into a variable
@@ -45,6 +56,7 @@ else:
 
 extensions = [Extension(PACKAGES[0] + '.calc_kdp_ray_fir',
                         [PACKAGES[0] + '/calc_kdp_ray_fir' + EXT])]
+include_dirs = [numpy.get_include(), '.']
 
 if USE_CYTHON:
     extensions = cythonize(extensions)
@@ -81,7 +93,7 @@ setup(name='csu_radartools',
       packages=PACKAGES,
       package_data={'csu_radartools': ['beta_function_parameters/*.csv']},
       ext_modules=extensions,
-      include_dirs=[numpy.get_include(), '.'],
+      include_dirs=include_dirs,
       install_requires=['numpy', 'pandas', 'matplotlib', 'scipy', 'cython'],
       python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
       )
