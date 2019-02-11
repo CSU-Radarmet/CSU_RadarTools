@@ -1,8 +1,8 @@
 sudo: false
 env:
   matrix:
-  - USE_CYTHON=true
-  - USE_CYTHON=false
+  - CSURT_F2PY=false
+  - CSURT_F2PY=true
   global:
   - LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libgfortran.so.3
 
