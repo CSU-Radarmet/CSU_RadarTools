@@ -57,5 +57,5 @@ Other Python versions are untested.
 Although we still fully support Python 2.7 at this time, we strongly recommend you move to Python >=3.6 as soon as practicable, given the Python 2 end of life date in less than a year, and the fact that many other scientific packages have dropped it already.
 For more information, please see e.g. [the Python 3 Statement](https://python3statement.org/).
 
-Latest release of CSU_RadarTools (v1.2):
+Latest release of CSU_RadarTools (v1.3):
 [![DOI](https://zenodo.org/badge/31606116.svg)](https://zenodo.org/badge/latestdoi/31606116)
