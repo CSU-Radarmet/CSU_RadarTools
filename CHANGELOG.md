@@ -1,4 +1,40 @@
-# Change Log
+# CSU_RadarTools Changelog
+
+
+## 1.3
+
+First release packaged for PyPI and Conda-Forge.
+
+### Beta_Functions
+
+* Changed membership beta functions for vertical ice and ice crystals.
+* Removed executable portion (when running as main script) that was never used.
+
+
+### Under the Hood
+
+* Conform project to modern, best practice standards.
+* Add basic Travis CI tests.
+* Fix and enhance setup script and prepare for proper packaging.
+* Drop support for EoL Python 2.7 and add it for 3.7.
+* Add CHANGELOG and RELEASE instructions and update/improve README.
+
+
+
+## 1.2
+
+Version bump; no non-trivial changes.
+
+
+
+## 1.0
+
+Initial Github release.
+
+### Examples
+
+* Updates to the example Jupyter notebooks.
+
 
 
 ## 2016-11
