@@ -20,12 +20,12 @@ except ImportError:
                        "or use pip >= 10, which will do so automatically.")
 
 
-# Set to False to use f2py instead of Cython for csu_kdp, etc
-if ('USE_CYTHON' not in os.environ
-        or os.environ.get('USE_CYTHON').lower() not in {'0', 'false', 'no'}):
-    USE_CYTHON = True
-else:
+# Set CSU_F2PY to True to use f2py instead of Cython for csu_kdp, etc
+if ('CSURT_F2PY' in os.environ
+        and os.environ.get('CSURT_F2PY').lower() not in {'0', 'false', 'no'}):
     USE_CYTHON = False
+else:
+    USE_CYTHON = True
 
 if USE_CYTHON:
     from setuptools import setup, Extension  # analysis:ignore
