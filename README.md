@@ -15,6 +15,10 @@ Scalars and arrays are supported as function inputs. The main exception is `csu_
 
 ## CSU_RadarTools Installation
 
+To install CSU_RadarTools, download the source code and then run the following in the code's home directory:
+
+```python setup.py install```
+
 By default, if the `CSURT_F2PY` environment variable is not set (or set to a case-insensitive match for {`0`, `false`, `no`}, the package will be compiled using Cython to speed up KDP and other routines.
 This enables the widest cross-platform support.
 However, if you are able to compile programs using `f2py`, you may want to try setting `CSU_F2PY` to any non-falsy value (e.g. `1`).
