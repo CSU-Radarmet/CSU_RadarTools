@@ -15,23 +15,6 @@ Scalars and arrays are supported as function inputs. The main exception is `csu_
 
 ## CSU_RadarTools Installation
 
-If using Anaconda/Miniconda, CSU_RadarTools can be installed from `conda-forge` (in progress) with:
-
-```
-conda install -c defaults -c conda-forge csu_radartools
-```
-
-We suggest you do so in a dedicated conda environment (e.g. shared with PyART and/or your other radar data manipulation tools) to avoid any chance of contaiminating your `base` environment.
-
-Alternatively, if not using Anaconda/Miniconda, you can install CSU_Radartools using `pip` (or `pip3`, if `pip` does not point to your Python 3 install on your system):
-
-```
-pip install csu_radartools
-```
-
-Again, we suggest using a proper `virtualenv`/`venv` for your radar analysis stack, *particularly* if using your system Python install.
-If are using your system Python or one installed for all users, you may need to have sudo privileges, depending on your setup.
-
 By default, if the `CSURT_F2PY` environment variable is not set (or set to a case-insensitive match for {`0`, `false`, `no`}, the package will be compiled using Cython to speed up KDP and other routines.
 This enables the widest cross-platform support.
 However, if you are able to compile programs using `f2py`, you may want to try setting `CSU_F2PY` to any non-falsy value (e.g. `1`).
