@@ -131,6 +131,8 @@ def get_beta_set(filename, factor=1.0):
     return set_values
 
 ################################
+
+
 def get_mbf_sets_winter(use_temp=False, plot_flag=False, n_types=2,
                         temp_factor=1, band='S', fdir=CSV_DIR, verbose=False,
                         pdir='./'):
@@ -202,10 +204,11 @@ def get_mbf_sets_winter(use_temp=False, plot_flag=False, n_types=2,
                             n_types=n_types)
 
     return mbf_sets
-    
+
+
 def get_mbf_sets_winterML(use_temp=False, plot_flag=False, n_types=2,
-                        temp_factor=1, band='S', fdir=CSV_DIR, verbose=False,
-                        pdir='./'):
+                          temp_factor=1, band='S', fdir=CSV_DIR, verbose=False,
+                          pdir='./'):
     """
     Define structures to hold the beta function parameters for each input
     variable and fuzzy set. Valid for summer precip.
@@ -274,8 +277,8 @@ def get_mbf_sets_winterML(use_temp=False, plot_flag=False, n_types=2,
                             n_types=n_types)
 
     return mbf_sets
-    
-    
+
+
 def get_mbf_sets_summer(use_temp=True, plot_flag=False, n_types=10,
                         temp_factor=1, band='S', fdir=CSV_DIR, verbose=False,
                         pdir='./'):
@@ -355,6 +358,7 @@ def get_mbf_sets_summer(use_temp=True, plot_flag=False, n_types=10,
                             n_types=n_types)
 
     return mbf_sets
+
 
 ################################
 

@@ -21,11 +21,11 @@ from __future__ import division
 from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
-from beta_functions import get_mbf_sets_winterML
-from csu_radartools.calc_kdp_ray_fir import hid_beta_f
+from .beta_functions import get_mbf_sets_winterML, CSV_DIR
+from .calc_kdp_ray_fir import hid_beta_f
 
-DEFAULT_WEIGHTS = {'DZ': [4,4], 'DR': [7,7], 'KD': [0,0], 'RH': [14,14], 'LD': [0,0],
-                   'T': [0,0]}
+DEFAULT_WEIGHTS = {'DZ': [4, 4], 'DR': [7, 7], 'KD': [0, 0], 'RH': [14, 14],
+                   'LD': [0, 0], 'T': [0, 0]}
 
 
 def hid_beta(x_arr, a, b, m):
@@ -33,10 +33,10 @@ def hid_beta(x_arr, a, b, m):
     return 1.0/(1.0 + (((x_arr - m)/a)**2)**b)
 
 
-def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
-                   dz=None, zdr=None, ldr=None, kdp=None, rho=None, T=None,
-                   verbose=False, plot_flag=False, n_types=2, temp_factor=1,
-                   band='S',fdir='./'):
+def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS,
+                        method='linear', dz=None, zdr=None, ldr=None, kdp=None,
+                        rho=None, T=None, verbose=False, plot_flag=False,
+                        n_types=2, temp_factor=1, band='S', fdir=CSV_DIR):
     """
     This is a melting level detection algorithm.
 
@@ -85,7 +85,7 @@ def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
     # Now grab the membership beta function parameters
     mbf_sets = get_mbf_sets_winterML(
         use_temp=use_temp, plot_flag=plot_flag, n_types=n_types,
-        temp_factor=temp_factor, band=band, verbose=verbose,fdir=fdir)
+        temp_factor=temp_factor, band=band, verbose=verbose, fdir=fdir)
     sets = _convert_mbf_sets(mbf_sets)
 
     # Check for presence of polarimetric variables
@@ -114,9 +114,9 @@ def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
     # Finish up
     mu = np.array(test_list)
     shp = np.concatenate([[n_types], shp])
-    #print('mu',mu.shape,'sz',sz,'shp',shp)
+    # print('mu',mu.shape,'sz',sz,'shp',shp)
     if verbose:
-        #print(mu.shape)
+        # print(mu.shape)
         print('mu max: ', mu.max())
     # return mu but make sure the shape is an int array
     return mu.reshape(shp.astype(np.int32))
@@ -193,9 +193,9 @@ def _get_weight_sum(fhc_vars, weights, method, verbose):
         print('No weighting method defined, use hybrid or linear')
         return None, None
     weight_sum = np.zeros([2])
-    for i in range(0,2):
-        weight_sum[i] = np.sum(np.array([fhc_vars[key]*weights[key][i]
-                                     for key in varlist]))
+    for i in range(0, 2):
+        weight_sum[i] = np.sum(np.array([fhc_vars[key] * weights[key][i]
+                                         for key in varlist]))
     if verbose:
         print('weight_sum: ', weight_sum)
     return weight_sum, varlist
