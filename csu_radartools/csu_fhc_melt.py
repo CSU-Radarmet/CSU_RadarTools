@@ -251,6 +251,5 @@ def get_ml_ppi(fh, dz, height, expected_ML,
         # meltlev[wh_sector1] = meltlevlim
     else:
         print('No azimuths specified. Using RHI version.')
-        meltlev, ML_medianZ = get_ml_rhi(fh, height,
-                                         expected_ML, verbose=False)
+        meltlev, ML_medianZ = get_ml_rhi(fh,dz, height,expected_ML, verbose=False)
     return meltlev, ML_medianZ

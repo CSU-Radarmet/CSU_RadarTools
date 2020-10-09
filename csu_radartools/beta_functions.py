@@ -281,9 +281,10 @@ def get_mbf_sets_summerML(use_temp=False, plot_flag=False, n_types=2,
     """
     Define structures to hold the beta function parameters for each input
     variable and fuzzy set. Valid for summer precip.
+    """
 
-<<<<<<< HEAD
-=======
+
+
 def get_mbf_sets_winter(use_temp=False, plot_flag=False, n_types=2,
                         temp_factor=1, band='S', fdir=CSV_DIR, verbose=False,
                         pdir='./'):

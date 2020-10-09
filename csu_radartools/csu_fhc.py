@@ -14,9 +14,16 @@ tjlangoc@gmail.com
 from __future__ import division
 from __future__ import absolute_import
 from __future__ import print_function
+
 import numpy as np
 from .beta_functions import get_mbf_sets_summer
+from .beta_functions import get_mbf_sets_winter, CSV_DIR
 from .calc_kdp_ray_fir import hid_beta_f
+
+from .csu_t_traps import get_hid_traps
+from .csu_fhc_melt import melting_layer
+from .csu_fhc_winter import csu_fhc_winter
+
 
 DEFAULT_WEIGHTS = {'DZ': 1.5, 'DR': 0.8, 'KD': 1.0, 'RH': 0.8, 'LD': 0.5,
                    'T': 0.4}
@@ -27,9 +34,101 @@ def hid_beta(x_arr, a, b, m):
     return 1.0/(1.0 + (((x_arr - m)/a)**2)**b)
 
 
+###Add the ability to run the winter HID
+"""
+csu_fhc_winter.py
+
+Brenda Dolan CSU, October 2018
+bdolan@atmos.colostate.edu
+
+Porting over Elizabeth Thompsons's HID code from IDL
+(Based on Thompson et al. 2014)
+(Also based on Dolan and Rutledge, 2009)
+
+Thompson, E. J., Rutledge, S. A., Dolan, B., Chandrasekar, V.,
+& Cheong, B. L. (2014). A dual-polarization radar hydrometeor classification
+algorithm for winter precipitation. Journal of Atmospheric and Oceanic
+Technology, 31(7), 1457-1481.
+
+Cateories:
+0  = Unclassified
+1  = Ice Crystals
+2  = Plates
+3  = Dendrites
+4  = Aggregates
+5  = Wet Snow
+6  = Frozen precip
+7  = Rain
+
+"""
+
+def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None, sn=None,
+               T=None, use_temp=False, band='S', method='linear', sn_thresh=5,
+               expected_ML=4.0, nsect=36, return_scores=False, azimuths=None,
+               verbose=True, minRH=0.5, scan_type='ppi', heights=None,
+               fdir=CSV_DIR):
+
+    # The first step is to find the wet snow and the melting layer.
+
+    meltlev, melt_z, fh, scores_ML = melting_layer(
+        dz=dz, zdr=zdr, kdp=kdp, rho=rho, sn=sn, heights=heights,
+        scan_type=scan_type, verbose=verbose, band=band,
+        fdir=fdir, azimuths=azimuths, expected_ML=expected_ML, minRH=minRH,
+        sn_thresh=sn_thresh, nsect=36)
+
+    # Step 2 is to run the warm layer HID.
+    # Using csu_fhc_winter and warm == True
+
+    scores_warm = csu_fhc_winter(
+        dz=dz, zdr=zdr, rho=None, kdp=kdp, use_temp=True, T=T, band='C',
+        warm=True, verbose=True, fdir=fdir)
+    fhwarm = np.argmax(scores_warm, axis=0) + 1
+    # Now reset the fhwarm values to correspond to
+    # 6 - Frozen
+    # 7 - Rain
+    fhwarm[fhwarm == 1] = 6
+    fhwarm[fhwarm == 2] = 7
+
+    scores_cold = csu_fhc_winter(dz=dz, zdr=zdr, rho=None, kdp=kdp,
+                                 use_temp=True, T=T, band='C', warm=False,
+                                 verbose=True, fdir=fdir)
+
+    fhcold = np.argmax(scores_cold, axis=0) + 1
+
+    # Now reset the fh values to correspond to
+    # 5 - Wet Snow
+    whgd = np.where(fh == 2)
+    fh[whgd] = 5
+
+    winter_hca = np.zeros_like(fh) - 1
+
+    # Now combine them using the melting level idea.
+    winter_hca[meltlev == 0] = fhwarm[meltlev == 0]
+    winter_hca[meltlev == 2] = fhcold[meltlev == 2]
+    # whbad = np.where(fh == -1)
+    whmelt = np.where(fh == 5)
+    winter_hca[whmelt] = 5
+    winter_hca[fh == -1] = -1
+    winter_hca[fh == 0] = -1
+
+    # Filter out where there is no pol data.
+    # rhfill = rho.filled(fill_value = np.nan)
+    # whbad = np.where(np.isnan(rhfill))
+    # winter_hca[whbad] = -1
+
+    if return_scores:
+        scores = {'ML': scores_ML, 'warm': scores_warm, 'cold': scores_cold}
+        hca = {'ML': fh, 'warm': fhwarm, 'cold': fhcold}
+        return winter_hca, scores, hca
+    else:
+        return winter_hca
+
+
+
+
 def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
                    dz=None, zdr=None, ldr=None, kdp=None, rho=None, T=None,
-                   verbose=False, plot_flag=False, n_types=10, temp_factor=1,
+                   verbose=False, plot_flag=False, use_trap=False,n_types=10, temp_factor=1,
                    band='S'):
     """
     Does FHC for warm-season precip.
@@ -93,6 +192,16 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
     # Check for presence of polarimetric variables
     pol_flag = _get_pol_flag(fhc_vars)
 
+    #Check to see if user wants to use trapazoidal temperature functions
+    if use_trap:
+        if verbose:
+            print('Using trapazoidal functions')
+        trap_flag = True
+    else:
+        if verbose:
+            print('Using beta functions')
+        trap_flag = False
+
     # Check for presence of temperature
     if use_temp:
         if verbose:
@@ -109,7 +218,7 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
 
     # Now loop over every hydrometeor class
     test_list = _get_test_list(fhc_vars, weights, radar_data, sets, varlist,
-                               weight_sum, pol_flag, use_temp, method, sz)
+                               weight_sum, pol_flag, trap_flag,use_temp, method, sz)
     if test_list is None:
         return None
 
@@ -214,8 +323,36 @@ def _calculate_test(fhc_vars, weights, radar_data, sets,
     return test
 
 
+def _calculate_test_trap(fhc_vars, weights, radar_data, sets,
+                    varlist, weight_sum, c, sz):
+    """Loop over every var to get initial value for each HID species 'test'"""
+    ##Add here the option to call the trapazoidal temperauter functions.
+
+    b_val = []
+    for key in varlist :
+        if key in radar_data.keys():
+            if key == 'T':
+                #print('Getting T trapazoids!')
+                tst  = (get_hid_traps(c,radar_data[key]))
+                #print(np.shape(tst))
+                b_val.append(tst)
+                
+            else:
+                tst =(fhc_vars[key]*weights[key]*hid_beta_f(sz,radar_data[key],sets[key]['a'][c],
+                        sets[key]['b'][c],sets[key]['m'][c]))
+                #print(np.shape(tst),type(b_val))
+                b_val.append(tst)
+    #             beta.append((np.array([fhc_vars[key] * weights[key] *
+    #                             hid_beta_f(sz, radar_data[key], sets[key]['a'][c],
+    #                             sets[key]['b'][c], sets[key]['m'][c])
+    #             for key in varlist if key in radar_data.keys()]),
+    #             axis=0)))
+    test = (np.sum(np.array(b_val),axis=0)/weight_sum)
+    return test
+
+
 def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
-                   pol_flag, use_temp, method, sz):
+                   pol_flag,trap_flag, use_temp, method, sz):
     """
     Master loop to compute HID values for each species ('test' & 'test_list').
     Depending on method used, approach is modfied.
@@ -228,8 +365,14 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
     for c in range(len(sets['DZ']['m'])):
         if 'hybrid' in method:  # Hybrid emphasizes Z and T extra HARD
             if pol_flag:
-                test = _calculate_test(fhc_vars, weights, radar_data, sets,
-                                       varlist, weight_sum, c, sz)
+                #Here use the trapazoidal temperatuer functions instead of beta functions
+                if trap_flag:
+                    test = _calculate_test_trap(fhc_vars, weights, radar_data, sets,
+                                           varlist, weight_sum, c, sz)
+                else:
+                    test = _calculate_test(fhc_vars, weights, radar_data, sets,
+                                           varlist, weight_sum, c, sz)
+
                 # if test.max() > 1:  # Max of test should never be > 1
                 #     print 'Fail loc 1, test.max() =', test.max()
                 #     return None
@@ -258,7 +401,12 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
                                       sets['DZ']['b'][c], sets['DZ']['m'][c])
         elif 'linear' in method:  # Just a giant weighted sum
             if pol_flag:
-                test = _calculate_test(fhc_vars, weights, radar_data, sets,
-                                       varlist, weight_sum, c, sz)
+                if trap_flag:
+                    test = _calculate_test_trap(fhc_vars, weights, radar_data, sets,
+                                           varlist, weight_sum, c, sz)
+                else:
+                    test = _calculate_test(fhc_vars, weights, radar_data, sets,
+                                           varlist, weight_sum, c, sz)
+                
         test_list.append(test)
     return test_list
