@@ -1,31 +1,27 @@
 """
-csu_fhc.py
+csu_fhc_winter.py
 
-Brody Fuchs, CSU, Sept 2014
-brfuchs@atmos.colostate.edu
+Brenda Dolan CSU, October 2018
+bdolan@atmos.colostate.edu
 
-Porting over Brenda Dolan's HID code from IDL
-(apparently originally from Kyle Wiens)
-
-Modifications by Timothy Lang
-tjlangoc@gmail.com
-01/21/2015
-08/05/2015 - Python 3
-11/20/2015 - Sped up hid_beta by using f2py + working w/ 1-D flattened arrays
-             that are later reshaped to the necessary shape.
-05/03/2016 - Cython now an option for speeding up the hid_beta routines.
-
+Porting over Elizabeth Thompsons's HID code from IDL
+(Based on Thompson et al. 2014)
+(Also based on Dolan and Rutledge, 2009)
 """
 
 from __future__ import division
 from __future__ import absolute_import
 from __future__ import print_function
 import numpy as np
-from .beta_functions import get_mbf_sets_winterML, CSV_DIR
+from .beta_functions import get_mbf_sets_winter, CSV_DIR
 from .calc_kdp_ray_fir import hid_beta_f
 
-DEFAULT_WEIGHTS = {'DZ': [4, 4], 'DR': [7, 7], 'KD': [0, 0], 'RH': [14, 14],
-                   'LD': [0, 0], 'T': [0, 0]}
+DEFAULT_WEIGHTS = {'DZ': [5, 5, 5, 5, 10, 10],
+                   'DR': [9, 9, 9, 10, 0, 0],
+                   'KD': [11, 11, 11, 10, 0, 0],
+                   'RH': [0, 0, 0, 0, 0, 0],
+                   'LD': [0, 0, 0, 0, 0, 0],
+                   'T': [0, 0, 0, 0, 20, 20]}
 
 
 def hid_beta(x_arr, a, b, m):
@@ -33,10 +29,10 @@ def hid_beta(x_arr, a, b, m):
     return 1.0/(1.0 + (((x_arr - m)/a)**2)**b)
 
 
-def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS,
-                        method='linear', dz=None, zdr=None, ldr=None, kdp=None,
-                        rho=None, T=None, verbose=False, plot_flag=False,
-                        n_types=2, temp_factor=1, band='S', fdir=CSV_DIR):
+def csu_fhc_winter(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
+                   dz=None, zdr=None, ldr=None, kdp=None, rho=None, T=None,
+                   verbose=False, plot_flag=False, n_types=7, temp_factor=1,
+                   warm=False, band='S', fdir=CSV_DIR):
     """
     This is a melting level detection algorithm.
 
@@ -67,8 +63,8 @@ def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS,
 
     HID types:           Species #:
     -------------------------------
-    Other                  1
-    Wet snow                     2
+    Sleet                  1
+    Rain                     2
 
     """
 
@@ -82,8 +78,11 @@ def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS,
     radar_data, fhc_vars, shp, sz = \
         _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose)
 
+    # print('dz',np.shape(dz))
+    # print('radar_data',np.shape(radar_data['DZ']),shp)
+
     # Now grab the membership beta function parameters
-    mbf_sets = get_mbf_sets_winterML(
+    mbf_sets = get_mbf_sets_winter(
         use_temp=use_temp, plot_flag=plot_flag, n_types=n_types,
         temp_factor=temp_factor, band=band, verbose=verbose, fdir=fdir)
     sets = _convert_mbf_sets(mbf_sets)
@@ -105,19 +104,28 @@ def csu_fhc_cold_newml1(use_temp=True, weights=DEFAULT_WEIGHTS,
     if weight_sum is None:
         return None
 
+    if warm:
+        types = np.arange(4, 6, 1)
+    else:
+        types = np.arange(0, 4, 1)
+
+    ntp = len(types)
+
     # Now loop over every hydrometeor class
     test_list = _get_test_list(fhc_vars, weights, radar_data, sets, varlist,
-                               weight_sum, pol_flag, use_temp, method, sz)
+                               weight_sum, pol_flag, use_temp, method,
+                               sz, types)
     if test_list is None:
         return None
 
     # Finish up
     mu = np.array(test_list)
-    shp = np.concatenate([[n_types], shp])
-    # print('mu',mu.shape,'sz',sz,'shp',shp)
+    shp = np.concatenate([[ntp], shp])
     if verbose:
-        print('mu max: ', mu.max())
+        # print(mu.shape)
+        print('mu max:', mu.max())
     # return mu but make sure the shape is an int array
+    # print('shape',shp,np.shape(shp))
     return mu.reshape(shp.astype(np.int32))
 
 ##########################
@@ -174,6 +182,7 @@ def _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose):
             fhc_vars[key] = 0
     if verbose:
         print('USING VARIABLES: ', fhc_vars)
+        # print('shape in pop var',shp, sz)
     return radar_data, fhc_vars, shp, sz
 
 
@@ -191,31 +200,35 @@ def _get_weight_sum(fhc_vars, weights, method, verbose):
     else:
         print('No weighting method defined, use hybrid or linear')
         return None, None
-    weight_sum = np.zeros([2])
-    for i in range(0, 2):
-        weight_sum[i] = np.sum(np.array([fhc_vars[key] * weights[key][i]
+    weight_sum = np.zeros([6])
+    for i, c in enumerate(range(0, 6)):
+        # print(weights.keys(), np.shape(weights['DZ']))
+        weight_sum[i] = np.sum(np.array([fhc_vars[key]*weights[key][i]
                                          for key in varlist]))
     if verbose:
-        print('weight_sum: ', weight_sum)
+        print('weight_sum:', weight_sum)
     return weight_sum, varlist
 
 
 def _calculate_test(fhc_vars, weights, radar_data, sets,
                     varlist, weight_sum, c, sz):
     """Loop over every var to get initial value for each HID species 'test'"""
-#    test = (np.sum(np.array([fhc_vars[key] * weights[key] *
-#                            hid_beta(radar_data[key], sets[key]['a'][c],
-#                            sets[key]['b'][c], sets[key]['m'][c])
+    # test = (np.sum(np.array([fhc_vars[key] * weights[key] *
+    #                          hid_beta(radar_data[key], sets[key]['a'][c],
+    #                          sets[key]['b'][c], sets[key]['m'][c])
+
+    # print(np.shape(weight_sum), c)
     test = (np.sum(np.array([fhc_vars[key] * weights[key][c] *
-                            hid_beta_f(sz, radar_data[key], sets[key]['a'][c],
-                            sets[key]['b'][c], sets[key]['m'][c])
+                             hid_beta_f(sz, radar_data[key], sets[key]['a'][c],
+                             sets[key]['b'][c], sets[key]['m'][c])
             for key in varlist if key in radar_data.keys()]),
             axis=0))/weight_sum[c]
+    # print('test shape', np.shape(test))
     return test
 
 
 def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
-                   pol_flag, use_temp, method, sz):
+                   pol_flag, use_temp, method, sz, types):
     """
     Master loop to compute HID values for each species ('test' & 'test_list').
     Depending on method used, approach is modfied.
@@ -225,7 +238,9 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
     """
     # TJL - Check order of if statements
     test_list = []
-    for c in range(len(sets['DZ']['m'])):
+    # for c in range(len(sets['DZ']['m'])):
+
+    for c in types:
         if 'hybrid' in method:  # Hybrid emphasizes Z and T extra HARD
             if pol_flag:
                 test = _calculate_test(fhc_vars, weights, radar_data, sets,
@@ -257,8 +272,11 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
                     test = hid_beta_f(sz, radar_data['DZ'], sets['DZ']['a'][c],
                                       sets['DZ']['b'][c], sets['DZ']['m'][c])
         elif 'linear' in method:  # Just a giant weighted sum
+            # print('Using linear', c)
             if pol_flag:
+                # print(c, sz, np.shape(weight_sum),' in linear')
                 test = _calculate_test(fhc_vars, weights, radar_data, sets,
                                        varlist, weight_sum, c, sz)
+                # print(np.shape(test), 'test')
         test_list.append(test)
     return test_list

@@ -282,6 +282,15 @@ def get_mbf_sets_summerML(use_temp=False, plot_flag=False, n_types=2,
     Define structures to hold the beta function parameters for each input
     variable and fuzzy set. Valid for summer precip.
 
+<<<<<<< HEAD
+=======
+def get_mbf_sets_winter(use_temp=False, plot_flag=False, n_types=2,
+                        temp_factor=1, band='S', fdir=CSV_DIR, verbose=False,
+                        pdir='./'):
+    """
+    Define structures to hold the beta function parameters for each input
+    variable and fuzzy set. Valid for summer precip.
+
     HID types:           Fuzzy set:
     -------------------------------
     other                  1
@@ -302,33 +311,33 @@ def get_mbf_sets_summerML(use_temp=False, plot_flag=False, n_types=2,
     mbf_sets = Membership beta function sets
     """
 
-    me = '-->get_mbf_sets_summer  '
+    me = '-->get_mbf_sets_winter  '
     if verbose:
         print(me + ' 2 Category ML %s-band HID' % band)
 
     # Horizontal Reflectivity (Zh)
-    fname = band + '-band_Reflectivity_ML_trop.csv'
+    fname = band + '-band_Reflectivity_winter.csv'
     Zh_set = get_beta_set(fdir+fname)
 
     # Differential Reflectivity (Zdr)
-    fname = band + '-band_Differential_Reflectivity_ML_trop.csv'
+    fname = band + '-band_Differential_Reflectivity_winter.csv'
     Zdr_set = get_beta_set(fdir+fname)
 
     # Specific Differential Phase (Kdp)
-    fname = band + '-band_Specific_Differential_Phase_ML_trop.csv'
+    fname = band + '-band_Specific_Differential_Phase_winter.csv'
     Kdp_set = get_beta_set(fdir+fname)
 
     # Linear depolarization ratio (LDR)
-    fname = band + '-band_Linear_Depolarization_Ratio_ML_trop.csv'
+    fname = band + '-band_Linear_Depolarization_Ratio_winter.csv'
     LDR_set = get_beta_set(fdir+fname)
 
     # Correlation coefficient at zero lag (rho)
-    fname = band + '-band_Correlation_Coefficient_ML_trop.csv'
+    fname = band + '-band_Correlation_Coefficient_winter.csv'
     rho_set = get_beta_set(fdir+fname)
 
     # Temperature (T)
     if use_temp:
-        fname = band + '-band_Temperature_ML_trop.csv'
+        fname = band + '-band_Temperature_winter.csv'
         T_set = get_beta_set(fdir+fname, factor=temp_factor)
         if verbose:
             print(me+'Using Temperature in HID')
@@ -348,6 +357,81 @@ def get_mbf_sets_summerML(use_temp=False, plot_flag=False, n_types=2,
     return mbf_sets
     
     
+
+
+def get_mbf_sets_winterML(use_temp=False, plot_flag=False, n_types=2,
+                          temp_factor=1, band='S', fdir=CSV_DIR, verbose=False,
+                          pdir='./'):
+    """
+    Define structures to hold the beta function parameters for each input
+    variable and fuzzy set. Valid for summer precip.
+
+    HID types:           Fuzzy set:
+    -------------------------------
+    other                  1
+    ML                      2
+
+    Arguments:
+    use_temp = Flag to create T beta function sets
+    plot_flag = Flag to turn on optional beta function plots
+    band = 'C' or 'S'
+    temp_factor = Factor to modify depth of T effects; > 1 will broaden the
+                  slopes of T MBFs
+    fdir = Path to CSV locations
+    n_types = Number of hydrometeor species
+    verbose = Set to True to get text updates
+    pdir = Directory to stash beta function plots (if made)
+
+    Returns:
+    mbf_sets = Membership beta function sets
+    """
+
+    me = '-->get_mbf_sets_melting '
+    if verbose:
+        print(me + ' 2 Category ML %s-band HID' % band)
+
+    # Horizontal Reflectivity (Zh)
+    fname = band + '-band_Reflectivity_ML.csv'
+    Zh_set = get_beta_set(fdir+fname)
+
+    # Differential Reflectivity (Zdr)
+    fname = band + '-band_Differential_Reflectivity_ML.csv'
+    Zdr_set = get_beta_set(fdir+fname)
+
+    # Specific Differential Phase (Kdp)
+    fname = band + '-band_Specific_Differential_Phase_ML.csv'
+    Kdp_set = get_beta_set(fdir+fname)
+
+    # Linear depolarization ratio (LDR)
+    fname = band + '-band_Linear_Depolarization_Ratio_ML.csv'
+    LDR_set = get_beta_set(fdir+fname)
+
+    # Correlation coefficient at zero lag (rho)
+    fname = band + '-band_Correlation_Coefficient_ML.csv'
+    rho_set = get_beta_set(fdir+fname)
+
+    # Temperature (T)
+    if use_temp:
+        fname = band + '-band_Temperature_ML.csv'
+        T_set = get_beta_set(fdir+fname, factor=temp_factor)
+        if verbose:
+            print(me+'Using Temperature in HID')
+    else:
+        T_set = None
+        if verbose:
+            print(me+'No Temperature used in HID')
+
+    # Now populate the full mbf_sets dictionary
+    mbf_sets = {'Zh_set': Zh_set, 'Zdr_set': Zdr_set, 'Kdp_set': Kdp_set,
+                'LDR_set': LDR_set, 'rho_set': rho_set, 'T_set': T_set}
+
+    if plot_flag:
+        plot_beta_functions(mbf_sets, band, temp_factor, pdir=pdir,
+                            n_types=n_types)
+
+    return mbf_sets
+
+
 def get_mbf_sets_summer(use_temp=True, plot_flag=False, n_types=10,
                         temp_factor=1, band='S', fdir=CSV_DIR, verbose=False,
                         pdir='./'):
@@ -427,6 +511,7 @@ def get_mbf_sets_summer(use_temp=True, plot_flag=False, n_types=10,
                             n_types=n_types)
 
     return mbf_sets
+
 
 ################################
 
