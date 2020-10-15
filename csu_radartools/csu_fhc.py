@@ -81,7 +81,7 @@ def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None, sn=None,
 
     scores_warm = csu_fhc_winter(
         dz=dz, zdr=zdr, rho=None, kdp=kdp, use_temp=True, T=T, band='C',
-        warm=True, verbose=True, fdir=fdir)
+        warm=True, verbose=verbose, fdir=fdir)
     fhwarm = np.argmax(scores_warm, axis=0) + 1
     # Now reset the fhwarm values to correspond to
     # 6 - Frozen
@@ -91,7 +91,7 @@ def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None, sn=None,
 
     scores_cold = csu_fhc_winter(dz=dz, zdr=zdr, rho=None, kdp=kdp,
                                  use_temp=True, T=T, band='C', warm=False,
-                                 verbose=True, fdir=fdir)
+                                 verbose=verbose, fdir=fdir)
 
     fhcold = np.argmax(scores_cold, axis=0) + 1
 
@@ -129,7 +129,7 @@ def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None, sn=None,
 def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
                    dz=None, zdr=None, ldr=None, kdp=None, rho=None, T=None,
                    verbose=False, plot_flag=False, use_trap=False,n_types=10, temp_factor=1,
-                   band='S'):
+                   band='S',return_scores=False):
     """
     Does FHC for warm-season precip.
 
@@ -229,7 +229,15 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
         print(mu.shape)
         print('mu max: ', mu.max())
     # return mu but make sure the shape is an int array
-    return mu.reshape(shp.astype(np.int32))
+    #return mu.reshape(shp.astype(np.int32))
+    
+    
+    if return_scores:
+        return mu.reshape(shp.astype(np.int32))
+    else:
+        hid = np.argmax(mu.reshape(shp.astype(np.int32)), axis=0) + 1
+        return hid
+
 
 ##########################
 # Private Functions Below#
@@ -378,6 +386,7 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
                 #     return None
             if use_temp:
                 if pol_flag:
+                    print('Using temp, pol')
                     # *= multiplies by new value and stores in test
                     test *= hid_beta_f(sz, radar_data['T'], sets['T']['a'][c],
                                        sets['T']['b'][c], sets['T']['m'][c])
