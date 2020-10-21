@@ -111,6 +111,6 @@ setup(name='csu_radartools',
       package_data={'csu_radartools': ['beta_function_parameters/*.csv']},
       ext_modules=EXTENSIONS,
       include_dirs=INCLUDE_DIRS,
-      install_requires=['numpy', 'pandas', 'matplotlib', 'scipy', 'cython'],
+      install_requires=['numpy', 'pandas', 'matplotlib', 'scipy', 'cython', 'netCDF4'],
       python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4',
       )
