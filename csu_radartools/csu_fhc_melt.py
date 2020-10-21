@@ -32,18 +32,18 @@ def melting_layer(dz=None, zdr=None, ldr=None, kdp=None, rho=None, sn=None,
                   heights=None, scan_type='ppi', verbose=False,
                   plot_flag=False, band='S', fdir=CSV_DIR, minRH=0.5,
                   expected_ML=None, nsect=36, sn_thresh=5, azimuths=None):
-
     # The first step ist to run a FHC that determines 'wet snow' from 'other'
     scores = csu_fhc_cold_newml1(
         dz=dz, zdr=zdr, rho=rho, kdp=kdp, use_temp=False, band='S',
-        method='linear', verbose=True, fdir=fdir)
+        method='linear', verbose=verbose, fdir=fdir)
 
     fh = np.argmax(scores, axis=0) + 1
 
     # Now this works a lot better if the SNR is included.
     if sn is not None:
-        print('QCing using SN <', sn_thresh,
-              'to remove edge WS classifications')
+        if verbose:
+            print('QCing using SN <', sn_thresh,
+                  'to remove edge WS classifications')
         fh[sn < sn_thresh] = 0
     else:
         if verbose:
@@ -55,7 +55,8 @@ def melting_layer(dz=None, zdr=None, ldr=None, kdp=None, rho=None, sn=None,
     rhfill = rho.filled(fill_value=np.nan)
     whbad = np.where(np.isnan(rhfill))
     fh[whbad] = -1
-    print('Qcing using RH <', minRH)
+    if verbose:
+        print('Qcing using RH <', minRH)
     fh[rho <= minRH] = -1
 
     # In this case, fh =1 is 'other', fh = 2 is 'Wet snow'
@@ -65,13 +66,15 @@ def melting_layer(dz=None, zdr=None, ldr=None, kdp=None, rho=None, sn=None,
     if heights is None:
         print('No heights specified. Returning')
         return
-    if scan_type == 'rhi':
-        print('scan type is RHI')
+    if scan_type == 'rhi' or scan_type == 'grid':
+        if verbose:
+            print('scan type is RHI')
         meltlev, mean_melt = get_ml_rhi(
             fh, dz, heights, expected_ML, verbose=verbose)
         print('RADAR MELTING IS:', mean_melt)
     else:
-        print('scan type is PPI')
+        if verbose:
+            print('scan type is PPI')
         meltlev, mean_melt = get_ml_ppi(
             fh, dz, heights, expected_ML, azimuths=azimuths,
             nsect=nsect, verbose=verbose)
@@ -103,6 +106,8 @@ def get_ml_rhi(fh, dz, height, expected_ML, verbose=False):
         wh_ML = np.ma.where(fh == 2)
     # find total number of ML pixels within these "proper" limits
     # of height and range
+    #print("Checking",np.shape(fh),np.shape(dz))
+    
     ML_z = height[wh_ML]
     # define 80th and 20th percentile marks for top and bottom of
     # ML ~ giangrande et al. 2008 / boodoo et al. 2010 methodology
@@ -181,10 +186,10 @@ def get_ml_ppi(fh, dz, height, expected_ML,
     if azimuths is not None:
         az3d = np.repeat(azimuths[..., np.newaxis],
                          np.shape(height[0, :]), axis=1)
-        nsec = 36
+        nsec = nsect
         if verbose:
             print('Number of sections:{n}'.format(n=nsec))
-        nint = 36
+        nint = nsect
         az_sector = np.linspace(0, 360, nint)
         ML_mode = np.zeros([nint-1])
         ML_sdevZ = np.zeros([nint-1])
@@ -201,10 +206,9 @@ def get_ml_ppi(fh, dz, height, expected_ML,
 
         for i, a in enumerate(az_sector[:-1]):
             wh_az = np.logical_and(az3d >= a, az3d < az_sector[i+1])
-            whsec = np.squeeze(np.ma.where(wh_az))
+            whsec = np.ma.where(wh_az)
             wh_sector1 = np.ma.where(np.logical_and(wh_az, fh == 2))
             wh_ws = np.ma.where(fh[wh_sector1] == 2)
-
             ML_sector = height[wh_sector1]
             npts = len(np.ravel(whsec))
             # print(npts)
@@ -217,7 +221,8 @@ def get_ml_ppi(fh, dz, height, expected_ML,
                 # print('made it to if')
                 # print(i, a)
                 MLcheck = np.median(ML_sector[wh_ws])
-                print(MLcheck, expected_ML)
+                if verbose:
+                    print('ML check, expected ML:',MLcheck, expected_ML)
                 if np.abs(MLcheck-expected_ML) > 2.0:
                     print('Melting layer is way off. Double check sounding',
                           'and radar data or consider different HCA.')
@@ -234,6 +239,7 @@ def get_ml_ppi(fh, dz, height, expected_ML,
                 if verbose:
                     print('Too few points for ML. Consider warm',
                           'HCA or completely winter case.')
+            
             whoutside = np.squeeze(
                 np.where(np.logical_or(ML_sector <= (ML_20Z[i]),
                                        ML_sector >= (ML_80Z[i]))))

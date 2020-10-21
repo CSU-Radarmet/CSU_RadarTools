@@ -74,7 +74,7 @@ def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None, sn=None,
         dz=dz, zdr=zdr, kdp=kdp, rho=rho, sn=sn, heights=heights,
         scan_type=scan_type, verbose=verbose, band=band,
         fdir=fdir, azimuths=azimuths, expected_ML=expected_ML, minRH=minRH,
-        sn_thresh=sn_thresh, nsect=36)
+        sn_thresh=sn_thresh, nsect=nsect)
 
     # Step 2 is to run the warm layer HID.
     # Using csu_fhc_winter and warm == True
@@ -101,10 +101,14 @@ def run_winter(dz=None, zdr=None, rho=None, kdp=None, ldr=None, sn=None,
     fh[whgd] = 5
 
     winter_hca = np.zeros_like(fh) - 1
-
     # Now combine them using the melting level idea.
     winter_hca[meltlev == 0] = fhwarm[meltlev == 0]
     winter_hca[meltlev == 2] = fhcold[meltlev == 2]
+    if scan_type == 'grid':
+        if verbose:
+            print('Note: Things get weird at the melting level in a gridded file.')
+        winter_hca[meltlev==1] = fhcold[meltlev==1]
+
     # whbad = np.where(fh == -1)
     whmelt = np.where(fh == 5)
     winter_hca[whmelt] = 5
@@ -386,7 +390,6 @@ def _get_test_list(fhc_vars, weights, radar_data, sets, varlist, weight_sum,
                 #     return None
             if use_temp:
                 if pol_flag:
-                    print('Using temp, pol')
                     # *= multiplies by new value and stores in test
                     test *= hid_beta_f(sz, radar_data['T'], sets['T']['a'][c],
                                        sets['T']['b'][c], sets['T']['m'][c])

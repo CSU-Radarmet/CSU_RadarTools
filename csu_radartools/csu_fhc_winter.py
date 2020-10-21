@@ -73,7 +73,7 @@ def csu_fhc_winter(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
         return None
     if T is None:
         use_temp = False
-
+    #print('verbose coming to winter:',verbose)
     # Populate fhc_vars and radar_data based on what was passed to function
     radar_data, fhc_vars, shp, sz = \
         _populate_vars(dz, zdr, kdp, rho, ldr, T, verbose)
