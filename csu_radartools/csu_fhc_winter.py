@@ -34,7 +34,6 @@ def csu_fhc_winter(use_temp=True, weights=DEFAULT_WEIGHTS, method='linear',
                    verbose=False, plot_flag=False, n_types=7, temp_factor=1,
                    warm=False, band='S', fdir=CSV_DIR):
     """
-    This is a melting level detection algorithm.
 
     Arguments:
     use_temp = Set to False to not use T in HID
