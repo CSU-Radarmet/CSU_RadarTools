@@ -50,15 +50,53 @@ Thompson, E. J., Rutledge, S. A., Dolan, B., Chandrasekar, V.,
 algorithm for winter precipitation. Journal of Atmospheric and Oceanic
 Technology, 31(7), 1457-1481.
 
-Cateories:
-0  = Unclassified
-1  = Ice Crystals
-2  = Plates
-3  = Dendrites
-4  = Aggregates
-5  = Wet Snow
-6  = Frozen precip
-7  = Rain
+
+Input measurands (if not None, all must match in shape/size):
+
+These should be masked arrays. For the winter HCA, Zdr, Kdp and rho are necessary inputs.
+dz = Input reflectivity scalar/array
+zdr = Input differential reflectivity scalar/array
+ldr = Input linear depolarization ratio scalar/array
+kdp = Input specific differential phase scalar/array
+rho = Input correlation coefficient scalar/array
+sn = Input signal to noise ratio scalar/array
+
+Flags:
+method: 'linear' scoring will multiply each variable by it's weight and sum the results.
+        'hybrid' will multiply the score of reflectivity and temperature by the sum of the
+                other variables times their weights.
+sn_thresh: Signal to noise threshold to use to find good data.
+minRH: THe minimum RhoHV to find good data.
+expected_ML: The height of the assumed melting layer. This is used to determine how correct
+        the radar-derived melting layer is.
+band: determines the beta functions to use. Currently available: S, C, X
+nsect: Determines the number of sectors to divide a PPI or grid into in order to find
+        non-concentric bright bands.
+azimuths: The azimuths of the PPI used in the melting layer detection.
+scan_type: Pass the melting layer algorithm the scan type to improve it's detection ability 
+        AVailable types are: ppi, rhi, and grid
+heights: Height of the radar data.
+verbose: How much is printed out relative to what the program is doing.
+return_scores: Flag to return all of the information about each algorithm that goes into 
+        the cold-season HCA.
+fdir: Directory containing the Membership function definitions.        
+    
+returned data:
+    Winter HCA categories
+    
+    Cateories:
+    0  = Unclassified
+    1  = Ice Crystals
+    2  = Plates
+    3  = Dendrites
+    4  = Aggregates
+    5  = Wet Snow
+    6  = Frozen precip
+    7  = Rain
+
+    if return_scores:
+        hca and scores are returned. Both are dictionaries containing the results of
+        each step of the HCA including the melting layer, cold and warm logic.
 
 """
 
@@ -141,12 +179,16 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
     use_temp = Set to False to not use T in HID
     weights = Dict that contains relative weights for every variable; see
               DEFAULT_WEIGHTS for expected stucture
-    method = Currently support 'hybrid' or 'linear' methods; hybrid preferred
+    method = Currently support 'hybrid' or 'linear' methods; hybrid preferred unless using
+            use_trap
     verbose = Set to True to get text updates
     plot_flag = Flag to turn on optional beta function plots
     band = 'X', 'C', or 'S'
     temp_factor = Factor to modify depth of T effects; > 1 will broaden the
                   slopes of T MBFs
+    use_trap: The option to use trapezoidal membership functions for temperature. This
+            allows for penalties in temperatures that are not possible for a given type.
+            If this flag is used, the 'linear' method can produce better results.
     n_types = Number of hydrometeor species
     verbose = Set to True to get text updates
 
@@ -159,8 +201,7 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
     T = Input temperature scalar/array
 
     Returns:
-    mu = Input array + addtl dimension containing weights for each HID species
-    To get dominant species number: fh = np.argmax(mu, axis=0) + 1
+        HID type number
 
     HID types:           Species #:
     -------------------------------
@@ -174,6 +215,12 @@ def csu_fhc_summer(use_temp=True, weights=DEFAULT_WEIGHTS, method='hybrid',
     High-Density Graupel     8
     Hail                     9
     Big Drops                10
+
+    if return_scores == True:
+        scores = Input array + addtl dimension containing scores for each HID species
+        
+        This can be used to look at the relative scores of 2nd and 3rd order types.
+
 
     """
 

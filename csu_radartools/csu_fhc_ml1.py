@@ -1,19 +1,13 @@
 """
-csu_fhc.py
+csu_fhc_ml1.py
 
 Brody Fuchs, CSU, Sept 2014
-brfuchs@atmos.colostate.edu
 
-Porting over Brenda Dolan's HID code from IDL
-(apparently originally from Kyle Wiens)
+Brenda Dolan, CSU October 2020
+bdolan@colostate.edu
 
-Modifications by Timothy Lang
-tjlangoc@gmail.com
-01/21/2015
-08/05/2015 - Python 3
-11/20/2015 - Sped up hid_beta by using f2py + working w/ 1-D flattened arrays
-             that are later reshaped to the necessary shape.
-05/03/2016 - Cython now an option for speeding up the hid_beta routines.
+This code is part of the cold-season HCA. It is essentially scoring a fuzzy logic
+algorithm just 'wet snow' or 'other'.
 
 """
 
