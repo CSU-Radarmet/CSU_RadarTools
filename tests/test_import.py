@@ -45,7 +45,6 @@ def test_import_fundamentals():
 def test_import_csu_fhc_melt():
     from csu_radartools import csu_fhc_melt
 
-
 def test_import_csu_fhc_ml1():
     from csu_radartools import csu_fhc_ml1
 
@@ -70,4 +69,4 @@ def test_import_calc_kdp_ray_fir():
     try:
         from csu_radartools import calc_kdp_ray_fir
     except ImportError:
-        pytest.fail("Failed to import calc_kdp_ray_fir")
+        pytest.fail("Failed to import calc_kdp_ray_fir. Needs Compilation.")
