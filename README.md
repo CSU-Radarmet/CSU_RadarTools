@@ -17,7 +17,7 @@ Scalars and arrays are supported as function inputs. The main exception is `csu_
 
 To install CSU_RadarTools, download the source code and then run the following in the code's home directory:
 
-```python setup.py install```
+```pip install .```
 
 By default, if the `CSURT_F2PY` environment variable is not set (or set to a case-insensitive match for {`0`, `false`, `no`}, the package will be compiled using Cython to speed up KDP and other routines.
 This enables the widest cross-platform support.
@@ -39,10 +39,7 @@ from csu_radartools import (csu_fhc, csu_liquid_ice_mass, csu_blended_rain,
 For help information do help on individual modules.
 There is also a demonstration IPython notebook in the notebooks directory that covers all the modules.
 
-CSU_RadarTools is known to work under Python 2.7 and 3.4-3.7.
-Other Python versions are untested.
-Although we still fully support Python 2.7 at this time, we strongly recommend you move to Python >=3.6 as soon as practicable, given the Python 2 end of life date in less than a year, and the fact that many other scientific packages have dropped it already.
-For more information, please see e.g. [the Python 3 Statement](https://python3statement.org/).
+CSU_RadarTools is known to work under Python 3.X
 
 Latest release of CSU_RadarTools (v1.3):
 [![DOI](https://zenodo.org/badge/31606116.svg)](https://zenodo.org/badge/latestdoi/31606116)
