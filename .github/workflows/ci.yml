@@ -6,7 +6,7 @@ on:
       - '**'
   pull_request:
     branches:
-      - '**'
+      - 'master'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-        os: [ubuntu-latest]
+        os: [ubuntu-latest] # only testing ubuntu
 
     steps:
       - uses: actions/checkout@v4
