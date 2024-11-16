@@ -1,0 +1,12 @@
+name: csu-radartools-dev
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - cython
+  - setuptools  # For building and installing the package
+  - pytest      # For running tests
+
