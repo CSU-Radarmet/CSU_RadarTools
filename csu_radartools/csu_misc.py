@@ -15,7 +15,7 @@ Lang et al. (2007; JCLIM) - Insect filter
 from __future__ import division
 import numpy as np
 from warnings import warn
-from scipy.ndimage.measurements import label
+from scipy.ndimage import label
 
 VERSION = '1.3'
 
