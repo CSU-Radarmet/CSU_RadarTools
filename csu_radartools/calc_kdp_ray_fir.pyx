@@ -189,6 +189,7 @@ def hid_beta_f(int ngates, float[:] x_arr, float a, float b, float m):
         Py_ssize_t i
 
     for i in range(ngates):
-        beta[i] = 1.0 / (1.0 + (((x_arr[i] - m) / a)**2.0)**b)
+        #beta[i] = 1.0 / (1.0 + (((x_arr[i] - m) / a)**2.0)**b)
+        beta[i] = 1.0 / (1.0 + np.power(np.power((x_arr[i] - m) / a, 2.0), b))
 
     return beta
