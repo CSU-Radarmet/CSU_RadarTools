@@ -44,7 +44,7 @@ There is also a demonstration IPython notebook in the notebooks directory that c
 CSU_RadarTools is known to work under Python 3.X
 
 Latest release of CSU_RadarTools (v1.5):
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13975472.svg)](https://doi.org/10.5281/zenodo.13975472)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1035907.svg)](https://doi.org/10.5281/zenodo.1035907)
 
 ## References for specific modules
 
