@@ -213,7 +213,7 @@ def get_ml_ppi(fh, dz, height, expected_ML,
             npts = len(np.ravel(whsec))
             # print(npts)
             ML_num_sector = len(ML_sector)
-            per_ML = np.float(ML_num_sector)/npts*100.
+            per_ML = float(ML_num_sector)/npts*100.
             # print('ML number in sector', ML_num_sector,
             #       'percent of sector', per_ML)
             # print('Mean dz in ML', np.nanmean(dz[wh_sector1]))
