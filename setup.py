@@ -79,8 +79,7 @@ EXTENSIONS = [Extension(PACKAGES[0] + '.calc_kdp_ray_fir',
                         include_dirs=INCLUDE_DIRS)]  # <-- MOVED HERE
 
 if USE_CYTHON:
-    EXTENSIONS = cythonize(EXTENSIONS,
-                           compiler_directives={'cpow': True})
+    EXTENSIONS = cythonize(EXTENSIONS, compiler_directives={'cpow': True})
 
 
 # Run setup
