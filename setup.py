@@ -71,14 +71,19 @@ if USE_CYTHON:
 else:
     EXT = '.f'
 
-EXTENSIONS = [Extension(PACKAGES[0] + '.calc_kdp_ray_fir',
-                        [PACKAGES[0] + '/calc_kdp_ray_fir' + EXT])]
 INCLUDE_DIRS = [numpy.get_include(), '.']
 
+# FIX: include_dirs needs to be passed to Extension, not setup()
+EXTENSIONS = [Extension(PACKAGES[0] + '.calc_kdp_ray_fir',
+                        [PACKAGES[0] + '/calc_kdp_ray_fir' + EXT],
+                        include_dirs=INCLUDE_DIRS)]  # <-- MOVED HERE
+
 if USE_CYTHON:
-    EXTENSIONS = cythonize(EXTENSIONS)
+    EXTENSIONS = cythonize(EXTENSIONS,
+                           compiler_directives={'cpow': True})
 
 
+# Run setup
 # Run setup
 setup(name='csu_radartools',
       version=get_version(),
@@ -88,7 +93,9 @@ setup(name='csu_radartools',
       author_email='bdolan@colostate.edu',
       description=DOCLINES[1],
       long_description=__doc__,
+      long_description_content_type='text/plain',  # Changed from markdown since __doc__ is plain
       keywords='radar precipitation meteorology weather',
+      license='GPLv2',  # Add explicit license
       classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Education',
@@ -99,12 +106,23 @@ setup(name='csu_radartools',
           'Operating System :: Unix',
           'Programming Language :: Cython',
           'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.8',
+          'Programming Language :: Python :: 3.9',
+          'Programming Language :: Python :: 3.10',
+          'Programming Language :: Python :: 3.11',
+          'Programming Language :: Python :: 3.12',
           'Topic :: Scientific/Engineering :: Atmospheric Science',
           ],
       packages=PACKAGES,
       package_data={'csu_radartools': ['beta_function_parameters/*.csv']},
       ext_modules=EXTENSIONS,
-      include_dirs=INCLUDE_DIRS,
-      install_requires=['numpy', 'pandas', 'matplotlib', 'scipy', 'cython', 'netCDF4'],
-      python_requires='<4',
-      )
+      install_requires=[
+          'numpy>=1.18',
+          'scipy',
+          'matplotlib',
+          'pandas',
+          'cython',
+          'netCDF4',
+      ],
+      python_requires='>=3.8',
+)

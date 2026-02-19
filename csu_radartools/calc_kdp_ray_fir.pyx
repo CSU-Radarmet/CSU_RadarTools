@@ -1,6 +1,7 @@
 # cython: boundscheck=False
 # cython: language_level=2
 
+import cython
 from libc.math cimport sqrt
 cimport numpy as np
 import numpy as np
@@ -190,5 +191,6 @@ def hid_beta_f(int ngates, float[:] x_arr, float a, float b, float m):
 
     for i in range(ngates):
         beta[i] = 1.0 / (1.0 + (((x_arr[i] - m) / a)**2.0)**b)
+        # beta[i] = 1.0 / (1.0 + np.power(np.power((x_arr[i] - m) / a, 2.0), b))
 
     return beta

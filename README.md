@@ -19,6 +19,8 @@ To install CSU_RadarTools, download the source code and then run the following i
 
 ```pip install .```
 
+NEW! Can also just install from PyPI (https://pypi.org/project/csu-radartools/): ```pip install csu-radartools```
+
 By default, if the `CSURT_F2PY` environment variable is not set (or set to a case-insensitive match for {`0`, `false`, `no`}, the package will be compiled using Cython to speed up KDP and other routines.
 This enables the widest cross-platform support.
 However, if you are able to compile programs using `f2py`, you may want to try setting `CSU_F2PY` to any non-falsy value (e.g. `1`).
